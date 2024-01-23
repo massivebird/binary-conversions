@@ -3,13 +3,17 @@ pub fn run(left: usize, right: usize) -> usize {
 }
 
 fn to_ones_complement(n: i32) -> i32 {
+    // TODO: binary representations are in twos complement.
+    // Twos complement is just ones complement + 1.
+    // But `i32::from_str_radix` has been returning
+    // Err: ParseIntError { kind: PosOverflow }
+
     if n.is_positive() || n == 0 { return n; }
 
-    let num_unsigned_bits = format!("{:b}", !n).len();
+    let unsigned_bit_string: String = format!("{:b}", !n);
+    let num_unsigned_bits = unsigned_bit_string.len();
 
-    let bit_string: String = format!("{:b}", !n);
-
-    let flipped_bit_string: String = bit_string.chars()
+    let flipped_bit_string: String = unsigned_bit_string.chars()
         .take(num_unsigned_bits)
         .map(|c| {
             if c == '0' { return '1' }

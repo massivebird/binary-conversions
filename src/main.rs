@@ -3,9 +3,8 @@ fn add_two(n: i32) -> i32 {
 }
 
 fn main() {
-    let num: i8 = -22;
-    let after = !num;
-    println!("{num} in Excess 8 is {:b}", to_excess_8(num));
+    let num: i32 = -22;
+    println!("{num:b}");
 }
 
 fn to_excess_8(num: i8) -> i8 {
