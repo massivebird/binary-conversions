@@ -27,6 +27,7 @@ pub fn to_ones_complement(n: i32) -> i32 {
 }
 
 pub fn to_twos_complement(n: i32) -> i32 {
+    // don't swap to `is_positive`: `is_negative` auto-handles input of zero
     if n.is_negative() {
         return to_ones_complement(n) + 1;
     }
