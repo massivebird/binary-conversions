@@ -1,3 +1,7 @@
+// Binary representations of integers are in twos complement.
+// That's confusing! So we convert the number to standard [un]signed magnitude
+// before making conversions (if necessary).
+
 pub fn to_ones_complement(n: i32) -> i32 {
     if n.is_positive() || n == 0 { return n; }
 
