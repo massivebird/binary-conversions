@@ -5,8 +5,6 @@ pub fn run(left: usize, right: usize) -> usize {
 fn to_1s_complement(n: i32) -> i32 {
     if n.is_positive() || n == 0 { return n; }
 
-    assert!(n < 127);
-
     let num_unsigned_bits = format!("{:b}", !n).len();
 
     let bit_string: String = format!("{:b}", !n);
