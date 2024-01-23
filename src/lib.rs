@@ -2,7 +2,7 @@ pub fn run(left: usize, right: usize) -> usize {
     left + right
 }
 
-fn to_ones_complement(n: i32) -> i32 {
+pub fn to_ones_complement(n: i32) -> i32 {
     // TODO: binary representations are in twos complement.
     // Twos complement is just ones complement + 1.
     // But `i32::from_str_radix` has been returning
@@ -26,7 +26,7 @@ fn to_ones_complement(n: i32) -> i32 {
     i32::from_str_radix(&bit_string_1c, 2).unwrap() - 1
 }
 
-fn to_twos_complement(n: i32) -> i32 {
+pub fn to_twos_complement(n: i32) -> i32 {
     if n.is_negative() {
         return to_ones_complement(n) + 1;
     }

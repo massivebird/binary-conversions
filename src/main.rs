@@ -1,18 +1,11 @@
-fn add_two(n: i32) -> i32 {
-    n + 2
-}
+use binary_conversions::{
+    to_ones_complement,
+    to_twos_complement
+};
 
 fn main() {
-    let num: i32 = -22;
-    println!("{num:b}");
+    let n: i32 = -35;
+    println!("Evaluating decimal {n}...");
+    println!("1's complement: {:#b}", to_ones_complement(n));
+    println!("2's complement: {:#b}", to_twos_complement(n));
 }
-
-fn to_excess_8(num: i8) -> i8 {
-    // if num > 11 {
-    //     panic!("nah, number {num} too big for excess 8");
-    // }
-    num + 8
-}
-
-#[cfg(tests)]
-mod tests;
