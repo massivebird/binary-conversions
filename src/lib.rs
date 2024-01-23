@@ -1,9 +1,4 @@
 pub fn to_ones_complement(n: i32) -> i32 {
-    // TODO: binary representations are in twos complement.
-    // Twos complement is just ones complement + 1.
-    // But `i32::from_str_radix` has been returning
-    // Err: ParseIntError { kind: PosOverflow }
-
     if n.is_positive() || n == 0 { return n; }
 
     let unsigned_bit_string: String = format!("{:b}", !n);
