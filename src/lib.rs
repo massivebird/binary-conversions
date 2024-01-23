@@ -1,7 +1,3 @@
-pub fn run(left: usize, right: usize) -> usize {
-    left + right
-}
-
 pub fn to_ones_complement(n: i32) -> i32 {
     // TODO: binary representations are in twos complement.
     // Twos complement is just ones complement + 1.
