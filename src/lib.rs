@@ -60,7 +60,6 @@ mod tests {
 
     #[test]
     fn test_1s_complement_n_0() {
-        // MSB is no longer 8th bit
         assert_eq!(to_1s_complement(-22), 0b10_1001);
     }
 
@@ -72,5 +71,10 @@ mod tests {
     #[test]
     fn test_1s_complement_n_2() {
         assert_eq!(to_1s_complement(-35), 0b101_1100);
+    }
+
+    #[test]
+    fn test_1s_complement_n_3() {
+        assert_eq!(to_1s_complement(-90), 0b10100101);
     }
 }
