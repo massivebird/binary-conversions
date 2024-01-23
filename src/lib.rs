@@ -8,7 +8,6 @@ fn to_ones_complement(n: i32) -> i32 {
     let num_unsigned_bits = format!("{:b}", !n).len();
 
     let bit_string: String = format!("{:b}", !n);
-    dbg!(&bit_string);
 
     let flipped_bit_string: String = bit_string.chars()
         .take(num_unsigned_bits)
