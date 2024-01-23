@@ -25,9 +25,7 @@ fn to_1s_complement(n: i32) -> i32 {
 
 fn to_2s_complement(n: i32) -> i32 {
     if n.is_negative() {
-        assert!(n < 127);
-        dbg!(n);
-        return !n.abs() + 127 + 1;
+        return to_1s_complement(n) + 1;
     }
     n
 }
@@ -74,5 +72,15 @@ mod tests {
     #[test]
     fn test_1s_complement_n_3() {
         assert_eq!(to_1s_complement(-90), 0b10100101);
+    }
+
+    #[test]
+    fn test_2s_complement_zero() {
+        assert_eq!(to_2s_complement(0), 0b0);
+    }
+
+    #[test]
+    fn test_2s_complement_n_0() {
+        assert_eq!(to_2s_complement(-90), 0b10100110);
     }
 }
