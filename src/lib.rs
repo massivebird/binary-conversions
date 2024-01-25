@@ -31,8 +31,9 @@ pub fn to_twos_complement(n: i32) -> i32 {
 }
 
 pub fn to_excess_64(n: i32) -> i32 {
-    let signed_bit_string = build_signed_bit_string(n);
-    i32::from_str_radix(&signed_bit_string, 2).unwrap()
+    assert!(n < 127 - 64, "E64: input too large");
+    // TODO: why? why does this work? What the fuck?
+    n + 64
 }
 
 fn build_unsigned_bit_string(n: i32) -> String {
@@ -104,7 +105,19 @@ mod tests {
     }
 
     #[test]
+    fn test_excess_64_zero() {
+        assert_eq!(to_excess_64(0), 0b1000000);
+    }
+
+    #[test]
+    #[should_panic]
     fn test_excess_64_p_1() {
         assert_eq!(to_excess_64(125), 0b1111_1101);
+        
+    }
+
+    #[test]
+    fn test_excess_64_n_0() {
+        assert_eq!(to_excess_64(-22), 0b0101010);
     }
 }
