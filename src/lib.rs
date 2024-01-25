@@ -1,3 +1,5 @@
+// TODO: ask if I can use native binary representations (do NOT make this a GitHub issue)
+
 // Binary representations of integers are in twos complement.
 // That's confusing! So we convert the number to standard [un]signed magnitude
 // before making conversions (if necessary).
@@ -113,7 +115,6 @@ mod tests {
     #[should_panic]
     fn test_excess_64_p_1() {
         assert_eq!(to_excess_64(125), 0b1111_1101);
-        
     }
 
     #[test]
