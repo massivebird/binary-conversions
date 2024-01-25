@@ -18,6 +18,7 @@ pub fn to_ones_complement(n: i32) -> i32 {
 
     let bit_string_1c = format!("1{flipped_bit_string}");
 
+    // minus one because this number is read as 2c, which is 1c + 1
     i32::from_str_radix(&bit_string_1c, 2).unwrap() - 1
 }
 
