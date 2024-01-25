@@ -5,7 +5,7 @@
 pub fn to_ones_complement(n: i32) -> i32 {
     if n.is_positive() || n == 0 { return n; }
 
-    let unsigned_bit_string: String = format!("{:b}", !n);
+    let unsigned_bit_string: String = build_unsigned_bit_string(n);
     let num_unsigned_bits = unsigned_bit_string.len();
 
     let flipped_bit_string: String = unsigned_bit_string.chars()
@@ -28,6 +28,20 @@ pub fn to_twos_complement(n: i32) -> i32 {
         return to_ones_complement(n) + 1;
     }
     n
+}
+
+pub fn to_excess_64(n: i32) -> i32 {
+    let signed_bit_string = build_signed_bit_string(n);
+    i32::from_str_radix(&signed_bit_string, 2).unwrap()
+}
+
+fn build_unsigned_bit_string(n: i32) -> String {
+    if n.is_positive() { return format!("{n:b}") }
+    format!("{:b}", !n)
+}
+
+fn build_signed_bit_string(n: i32) -> String {
+    format!("1{}", build_unsigned_bit_string(n))
 }
 
 #[cfg(test)]
@@ -82,5 +96,15 @@ mod tests {
     #[test]
     fn test_twos_complement_n_0() {
         assert_eq!(to_twos_complement(-90), 0b10100110);
+    }
+
+    #[test]
+    fn test_excess_64_p_0() {
+        assert_eq!(to_excess_64(35), 0b110_0011);
+    }
+
+    #[test]
+    fn test_excess_64_p_1() {
+        assert_eq!(to_excess_64(125), 0b1111_1101);
     }
 }
