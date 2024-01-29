@@ -4,6 +4,30 @@
 // That's confusing! So we convert the number to standard [un]signed magnitude
 // before making conversions (if necessary).
 
+pub fn run(n: i128) {
+    println!("Evaluating decimal {n}...");
+    println!("1's complement: {:#b}", to_ones_complement(n));
+    println!("2's complement: {:#b}", to_twos_complement(n));
+    println!("Excess-64:      {:#b}", to_excess(64, n));
+}
+
+/// A dummy, lightweight, non-`clap` main function.
+/// I have to demonstrate this code in class, but Rust Playground
+/// does not support command line arguments.
+/// This main function expects input via stdin.
+pub fn dummy_main() {
+    println!("Enter a number to convert to binary:");
+    let n: i128 = loop {
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+        if let Ok(n) = input.trim().parse::<i128>() {
+            break n;
+        }
+    };
+
+    run(n);
+}
+
 fn to_ones_complement(n: i128) -> i128 {
     if n.is_positive() || n == 0 { return n; }
 
@@ -41,35 +65,11 @@ fn build_signed_bit_string(n: i128) -> String {
     format!("1{}", build_unsigned_bit_string(n))
 }
 
-pub fn run(n: i128) {
-    println!("Evaluating decimal {n}...");
-    println!("1's complement: {:#b}", to_ones_complement(n));
-    println!("2's complement: {:#b}", to_twos_complement(n));
-    println!("Excess-64:      {:#b}", to_excess(64, n));
-}
-
 /// Converts a value `n` to excess `e`.
 pub fn to_excess(e: i128, n: i128) -> i128 {
     assert!(n < i128::MAX - e, "Excess-{e}: input {n} too large");
     // TODO: why? why does this work? What the fuck?
     n + e
-}
-
-/// A dummy, lightweight, non-`clap` main function.
-/// I have to demonstrate this code in class, but Rust Playground
-/// does not support command line arguments.
-/// This main function expects input via stdin.
-pub fn dummy_main() {
-    println!("Enter a number to convert to binary:");
-    let n: i128 = loop {
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input).unwrap();
-        if let Ok(n) = input.trim().parse::<i128>() {
-            break n;
-        }
-    };
-
-    run(n);
 }
 
 #[cfg(test)]
