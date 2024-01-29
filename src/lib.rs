@@ -8,6 +8,7 @@ pub fn run(n: i128) {
     println!("Evaluating decimal {n}...");
     println!("1's complement: {:#b}", to_ones_complement(n));
     println!("2's complement: {:#b}", to_twos_complement(n));
+    println!("Excess-32:      {:#b}", to_excess(32, n));
     println!("Excess-64:      {:#b}", to_excess(64, n));
 }
 
