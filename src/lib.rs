@@ -69,7 +69,6 @@ fn build_signed_bit_string(n: i128) -> String {
 /// Converts a value `n` to excess `e`.
 pub fn to_excess(e: i128, n: i128) -> i128 {
     assert!(n < i128::MAX - e, "Excess-{e}: input {n} too large");
-    // TODO: why? why does this work? What the fuck?
     n + e
 }
 
