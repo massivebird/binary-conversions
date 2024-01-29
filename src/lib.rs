@@ -82,68 +82,68 @@ mod tests {
     }
 
     #[test]
-    fn test_ones_complement_zero() {
+    fn ones_complement_zero() {
         assert_eq!(to_ones_complement(0), 0b0);
     }
 
     #[test]
-    fn test_ones_complement_p_0() {
+    fn ones_complement_p_0() {
         assert_eq!(to_ones_complement(25), 0b0011001);
     }
 
     #[test]
-    fn test_ones_complement_p_1() {
+    fn ones_complement_p_1() {
         assert_eq!(to_ones_complement(35), 0b0100011);
     }
 
     #[test]
-    fn test_ones_complement_n_0() {
+    fn ones_complement_n_0() {
         assert_eq!(to_ones_complement(-22), 0b10_1001);
     }
 
     #[test]
-    fn test_ones_complement_n_1() {
+    fn ones_complement_n_1() {
         assert_eq!(to_ones_complement(-42), 0b101_0101);
     }
 
     #[test]
-    fn test_ones_complement_n_2() {
+    fn ones_complement_n_2() {
         assert_eq!(to_ones_complement(-35), 0b101_1100);
     }
 
     #[test]
-    fn test_ones_complement_n_3() {
+    fn ones_complement_n_3() {
         assert_eq!(to_ones_complement(-90), 0b10100101);
     }
 
     #[test]
-    fn test_twos_complement_zero() {
+    fn twos_complement_zero() {
         assert_eq!(to_twos_complement(0), 0b0);
     }
 
     #[test]
-    fn test_twos_complement_n_0() {
+    fn twos_complement_n_0() {
         assert_eq!(to_twos_complement(-90), 0b10100110);
     }
 
     #[test]
-    fn test_excess_64_p_0() {
+    fn excess_64_p_0() {
         assert_eq!(to_excess(64, 35), 0b110_0011);
     }
 
     #[test]
-    fn test_excess_64_zero() {
+    fn excess_64_zero() {
         assert_eq!(to_excess(64, 0), 0b1000000);
     }
 
     #[test]
     #[should_panic]
-    fn test_excess_64_p_1() {
+    fn excess_64_p_1() {
         assert_eq!(to_excess(64, 125), 0b1111_1101);
     }
 
     #[test]
-    fn test_excess_64_n_0() {
+    fn excess_64_n_0() {
         assert_eq!(to_excess(64, -22), 0b0101010);
     }
 }
