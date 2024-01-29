@@ -5,7 +5,7 @@ use binary_conversions::{
 };
 use clap::Arg;
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let matches = clap::command!()
         .arg(Arg::new("n")
             .required(true)
@@ -13,12 +13,23 @@ fn main() {
             .value_parser(clap::value_parser!(i32))
             .help("Specify the decimal number to convert")
         )
+        .arg(Arg::new("dummy")
+            .long("dummy")
+            .required(false)
+            .conflicts_with("n")
+            .action(clap::ArgAction::SetTrue)
+            .help("Run the dummy main")
+        )
         .get_matches();
+
+    if matches.get_flag("dummy") {
+        binary_conversions::dummy_main();
+        return Ok(());
+    }
 
     let n: i32 = *matches.get_one("n").unwrap();
 
-    println!("Evaluating decimal {n}...");
-    println!("1's complement: {:#b}", to_ones_complement(n));
-    println!("2's complement: {:#b}", to_twos_complement(n));
-    println!("Excess-64:      {:#b}", to_excess_64(n));
+    binary_conversions::run(n);
+
+    Ok(())
 }

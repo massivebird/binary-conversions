@@ -47,6 +47,26 @@ fn build_signed_bit_string(n: i32) -> String {
     format!("1{}", build_unsigned_bit_string(n))
 }
 
+pub fn run(n: i32) {
+    println!("Evaluating decimal {n}...");
+    println!("1's complement: {:#b}", to_ones_complement(n));
+    println!("2's complement: {:#b}", to_twos_complement(n));
+    println!("Excess-64:      {:#b}", to_excess_64(n));
+}
+
+pub fn dummy_main() {
+    println!("Enter a number to convert to binary:");
+    let n: i32 = loop {
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+        if let Ok(n) = input.trim().parse::<i32>() {
+            break n;
+        }
+    };
+
+    run(n);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
