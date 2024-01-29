@@ -54,6 +54,10 @@ pub fn run(n: i32) {
     println!("Excess-64:      {:#b}", to_excess_64(n));
 }
 
+/// A dummy, lightweight, non-`clap` main function.
+/// I have to demonstrate this code in class, but Rust Playground
+/// does not support command line arguments.
+/// This main function expects input via stdin.
 pub fn dummy_main() {
     println!("Enter a number to convert to binary:");
     let n: i32 = loop {
