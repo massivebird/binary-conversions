@@ -1,8 +1,3 @@
-use binary_conversions::{
-    to_ones_complement,
-    to_twos_complement,
-    to_excess_64,
-};
 use clap::Arg;
 
 fn main() -> std::io::Result<()> {
@@ -10,7 +5,7 @@ fn main() -> std::io::Result<()> {
         .arg(Arg::new("n")
             .required(true)
             .value_name("NUM")
-            .value_parser(clap::value_parser!(i32))
+            .value_parser(clap::value_parser!(i128))
             .help("Specify the decimal number to convert")
         )
         .arg(Arg::new("dummy")
@@ -27,7 +22,7 @@ fn main() -> std::io::Result<()> {
         return Ok(());
     }
 
-    let n: i32 = *matches.get_one("n").unwrap();
+    let n: i128 = *matches.get_one("n").unwrap();
 
     binary_conversions::run(n);
 

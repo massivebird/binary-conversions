@@ -4,7 +4,7 @@
 // That's confusing! So we convert the number to standard [un]signed magnitude
 // before making conversions (if necessary).
 
-pub fn to_ones_complement(n: i32) -> i32 {
+fn to_ones_complement(n: i128) -> i128 {
     if n.is_positive() || n == 0 { return n; }
 
     let unsigned_bit_string: String = build_unsigned_bit_string(n);
@@ -21,10 +21,10 @@ pub fn to_ones_complement(n: i32) -> i32 {
     let bit_string_1c = format!("1{flipped_bit_string}");
 
     // minus one because this number is read as 2c, which is 1c + 1
-    i32::from_str_radix(&bit_string_1c, 2).unwrap() - 1
+    i128::from_str_radix(&bit_string_1c, 2).unwrap() - 1
 }
 
-pub fn to_twos_complement(n: i32) -> i32 {
+fn to_twos_complement(n: i128) -> i128 {
     // don't swap to `is_positive`: `is_negative` auto-handles input of zero
     if n.is_negative() {
         return to_ones_complement(n) + 1;
@@ -32,26 +32,27 @@ pub fn to_twos_complement(n: i32) -> i32 {
     n
 }
 
-pub fn to_excess_64(n: i32) -> i32 {
-    assert!(n < 127 - 64, "E64: input too large");
-    // TODO: why? why does this work? What the fuck?
-    n + 64
-}
-
-fn build_unsigned_bit_string(n: i32) -> String {
+fn build_unsigned_bit_string(n: i128) -> String {
     if n.is_positive() { return format!("{n:b}") }
     format!("{:b}", !n)
 }
 
-fn build_signed_bit_string(n: i32) -> String {
+fn build_signed_bit_string(n: i128) -> String {
     format!("1{}", build_unsigned_bit_string(n))
 }
 
-pub fn run(n: i32) {
+pub fn run(n: i128) {
     println!("Evaluating decimal {n}...");
     println!("1's complement: {:#b}", to_ones_complement(n));
     println!("2's complement: {:#b}", to_twos_complement(n));
-    println!("Excess-64:      {:#b}", to_excess_64(n));
+    println!("Excess-64:      {:#b}", to_excess(64, n));
+}
+
+/// Converts a value `n` to excess `e`.
+pub fn to_excess(e: i128, n: i128) -> i128 {
+    assert!(n < i128::MAX - e, "Excess-{e}: input {n} too large");
+    // TODO: why? why does this work? What the fuck?
+    n + e
 }
 
 /// A dummy, lightweight, non-`clap` main function.
@@ -60,10 +61,10 @@ pub fn run(n: i32) {
 /// This main function expects input via stdin.
 pub fn dummy_main() {
     println!("Enter a number to convert to binary:");
-    let n: i32 = loop {
+    let n: i128 = loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
-        if let Ok(n) = input.trim().parse::<i32>() {
+        if let Ok(n) = input.trim().parse::<i128>() {
             break n;
         }
     };
@@ -77,7 +78,7 @@ mod tests {
 
     #[test]
     fn radix_test() {
-        assert_eq!(i32::from_str_radix("11011101", 2).unwrap(), 221);
+        assert_eq!(i128::from_str_radix("11011101", 2).unwrap(), 221);
     }
 
     #[test]
@@ -127,22 +128,22 @@ mod tests {
 
     #[test]
     fn test_excess_64_p_0() {
-        assert_eq!(to_excess_64(35), 0b110_0011);
+        assert_eq!(to_excess(64, 35), 0b110_0011);
     }
 
     #[test]
     fn test_excess_64_zero() {
-        assert_eq!(to_excess_64(0), 0b1000000);
+        assert_eq!(to_excess(64, 0), 0b1000000);
     }
 
     #[test]
     #[should_panic]
     fn test_excess_64_p_1() {
-        assert_eq!(to_excess_64(125), 0b1111_1101);
+        assert_eq!(to_excess(64, 125), 0b1111_1101);
     }
 
     #[test]
     fn test_excess_64_n_0() {
-        assert_eq!(to_excess_64(-22), 0b0101010);
+        assert_eq!(to_excess(64, -22), 0b0101010);
     }
 }
