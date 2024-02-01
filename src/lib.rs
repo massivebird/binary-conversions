@@ -127,6 +127,21 @@ mod tests {
     }
 
     #[test]
+    fn twos_complement_n_1() {
+        assert_eq!(to_twos_complement(-2), 0b1110);
+    }
+
+    #[test]
+    fn twos_complement_n_2() {
+        assert_eq!(to_twos_complement(-32), 0b110_0000);
+    }
+
+    #[test]
+    fn excess_32_n_0() {
+        assert_eq!(to_excess(32, -37), todo!());
+    }
+
+    #[test]
     fn excess_64_p_0() {
         assert_eq!(to_excess(64, 35), 0b110_0011);
     }
