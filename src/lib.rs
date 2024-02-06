@@ -69,23 +69,59 @@ fn to_twos_complement(n: i128) -> i128 {
 
 fn build_unsigned_bit_string(n: i128) -> String {
     if n.is_positive() { return format!("{n:b}") }
-    format!("{:b}", !n)
+    // format!("{:b}", !n);
+
+    // highest power of 2 that "fits in" n,
+    // n of 65 returns value of 6
+    let num_bits = {
+        let mut i: u32 = 0;
+        loop {
+            if n == 0 || 2i128.pow(i) > n.abs() { break i + 1 };
+            i += 1;
+        }
+    };
+    dbg!(num_bits);
+
+    let mut remaining_value = n;
+    let bit_string = {
+        let mut working_bit_string = String::new();
+
+        for bit in (1..=num_bits).rev() {
+            let bit_value = 2i128.pow(bit);
+
+            if bit_value <= remaining_value {
+                working_bit_string.push('1');
+                remaining_value -= bit_value;
+            }
+            working_bit_string.push('0');
+        }
+
+        working_bit_string
+    };
+
+    bit_string
 }
 
 fn build_signed_bit_string(n: i128) -> String {
-    format!("1{}", build_unsigned_bit_string(n))
+    let unsigned_bit_string = build_unsigned_bit_string(n);
+
+    if n.is_negative() {
+        return format!("1{}", unsigned_bit_string);
+    }
+
+    unsigned_bit_string
 }
 
 /// Converts a value `n` to excess `e`.
 pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
-    assert!(n < e, "Excess-{e}: input {n} too large");
     if n.abs() > e {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
     let total_bits = i128::ilog2(e) as usize;
     let unpadded_bit_string = build_unsigned_bit_string(n + e);
     let padding = "0".repeat(total_bits - unpadded_bit_string.len());
-    Ok(format!("0b{}{:b}", padding, n + e))
+    dbg!(&total_bits);
+    Ok(format!("{}{}", padding, unpadded_bit_string))
 }
 
 #[cfg(test)]
@@ -95,6 +131,11 @@ mod tests {
     #[test]
     fn radix_test() {
         assert_eq!(i128::from_str_radix("11011101", 2).unwrap(), 221);
+    }
+
+    #[test]
+    fn build_unsigned_bit_string_zero() {
+        assert_eq!(build_unsigned_bit_string(0), "0")
     }
 
     #[test]
@@ -130,17 +171,17 @@ mod tests {
 
     #[test]
     fn excess_64_positive() {
-        assert_eq!(to_excess(64, 35), Ok("0b110_0011".to_string()));
+        assert_eq!(to_excess(64, 35), Ok("110_0011".to_string()));
     }
 
     #[test]
     fn excess_64_zero() {
-        assert_eq!(to_excess(64, 0), Ok("0b1000000".to_string()));
+        assert_eq!(to_excess(64, 0), Ok("1000000".to_string()));
     }
 
     #[test]
     fn excess_64_negative() {
-        assert_eq!(to_excess(64, -22), Ok("0b0101010".to_string()));
-        assert_eq!(to_excess(64, -37), Ok("0b11011".to_string()));
+        assert_eq!(to_excess(64, -22), Ok("0101010".to_string()));
+        assert_eq!(to_excess(64, -37), Ok("0011011".to_string()));
     }
 }
