@@ -5,11 +5,21 @@
 // before making conversions (if necessary).
 
 pub fn run(n: i128) {
+    let e32_output = match to_excess(32, n) {
+        Ok(bit_string) => bit_string,
+        Err(msg) => msg
+    };
+
+    let e64_output = match to_excess(64, n) {
+        Ok(bit_string) => bit_string,
+        Err(msg) => msg
+    };
+
     println!("Evaluating decimal {n}...");
     println!("1's complement: {:#b}", to_ones_complement(n));
     println!("2's complement: {:#b}", to_twos_complement(n));
-    println!("Excess-32:      {:#b}", to_excess(32, n));
-    println!("Excess-64:      {:#b}", to_excess(64, n));
+    println!("Excess-32:      {}",    e32_output);
+    println!("Excess-64:      {}",    e64_output);
 }
 
 /// A dummy, lightweight, non-`clap` main function.
@@ -67,9 +77,15 @@ fn build_signed_bit_string(n: i128) -> String {
 }
 
 /// Converts a value `n` to excess `e`.
-pub fn to_excess(e: i128, n: i128) -> i128 {
-    assert!(n < i128::MAX - e, "Excess-{e}: input {n} too large");
-    n + e
+pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
+    assert!(n < e, "Excess-{e}: input {n} too large");
+    if n.abs() > e {
+        return Err(format!("input {n} too large for Excess-{e}"))
+    }
+    let total_bits = i128::ilog2(e) as usize;
+    let unpadded_bit_string = build_unsigned_bit_string(n + e);
+    let padding = "0".repeat(total_bits - unpadded_bit_string.len());
+    Ok(format!("0b{}{:b}", padding, n + e))
 }
 
 #[cfg(test)]
@@ -87,33 +103,17 @@ mod tests {
     }
 
     #[test]
-    fn ones_complement_p_0() {
+    fn ones_complement_positive() {
         assert_eq!(to_ones_complement(25), 0b0011001);
-    }
-
-    #[test]
-    fn ones_complement_p_1() {
         assert_eq!(to_ones_complement(35), 0b0100011);
     }
 
     #[test]
-    fn ones_complement_n_0() {
-        assert_eq!(to_ones_complement(-22), 0b10_1001);
-    }
-
-    #[test]
-    fn ones_complement_n_1() {
-        assert_eq!(to_ones_complement(-42), 0b101_0101);
-    }
-
-    #[test]
-    fn ones_complement_n_2() {
+    fn ones_complement_negative() {
         assert_eq!(to_ones_complement(-35), 0b101_1100);
-    }
-
-    #[test]
-    fn ones_complement_n_3() {
         assert_eq!(to_ones_complement(-90), 0b10100101);
+        assert_eq!(to_ones_complement(-22), 0b10_1001);
+        assert_eq!(to_ones_complement(-42), 0b101_0101);
     }
 
     #[test]
@@ -122,43 +122,25 @@ mod tests {
     }
 
     #[test]
-    fn twos_complement_n_0() {
+    fn twos_complement_negative() {
         assert_eq!(to_twos_complement(-90), 0b10100110);
-    }
-
-    #[test]
-    fn twos_complement_n_1() {
         assert_eq!(to_twos_complement(-2), 0b1110);
-    }
-
-    #[test]
-    fn twos_complement_n_2() {
         assert_eq!(to_twos_complement(-32), 0b110_0000);
     }
 
     #[test]
-    fn excess_32_n_0() {
-        assert_eq!(to_excess(32, -37), todo!());
-    }
-
-    #[test]
-    fn excess_64_p_0() {
-        assert_eq!(to_excess(64, 35), 0b110_0011);
+    fn excess_64_positive() {
+        assert_eq!(to_excess(64, 35), Ok("0b110_0011".to_string()));
     }
 
     #[test]
     fn excess_64_zero() {
-        assert_eq!(to_excess(64, 0), 0b1000000);
+        assert_eq!(to_excess(64, 0), Ok("0b1000000".to_string()));
     }
 
     #[test]
-    #[should_panic]
-    fn excess_64_p_1() {
-        assert_eq!(to_excess(64, 125), 0b1111_1101);
-    }
-
-    #[test]
-    fn excess_64_n_0() {
-        assert_eq!(to_excess(64, -22), 0b0101010);
+    fn excess_64_negative() {
+        assert_eq!(to_excess(64, -22), Ok("0b0101010".to_string()));
+        assert_eq!(to_excess(64, -37), Ok("0b11011".to_string()));
     }
 }
