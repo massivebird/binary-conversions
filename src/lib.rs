@@ -117,10 +117,12 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     if n.abs() > e {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
-    let total_bits = i128::ilog2(e) as usize;
+    let total_bits = i128::ilog2(e) as usize + 1;
     let unpadded_bit_string = build_unsigned_bit_string(n + e);
-    let padding = "0".repeat(total_bits - unpadded_bit_string.len());
+    dbg!(&n);
     dbg!(&total_bits);
+    dbg!(&unpadded_bit_string);
+    let padding = "0".repeat(total_bits - unpadded_bit_string.len());
     Ok(format!("{}{}", padding, unpadded_bit_string))
 }
 
@@ -136,6 +138,11 @@ mod tests {
     #[test]
     fn build_unsigned_bit_string_zero() {
         assert_eq!(build_unsigned_bit_string(0), "0")
+    }
+
+    #[test]
+    fn build_unsigned_bit_string_positive() {
+        assert_eq!(build_unsigned_bit_string(37), "100101")
     }
 
     #[test]
@@ -171,7 +178,7 @@ mod tests {
 
     #[test]
     fn excess_64_positive() {
-        assert_eq!(to_excess(64, 35), Ok("110_0011".to_string()));
+        assert_eq!(to_excess(64, 35), Ok("1100011".to_string()));
     }
 
     #[test]
