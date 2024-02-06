@@ -16,8 +16,8 @@ pub fn run(n: i128) {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("1's complement: {:#b}", to_ones_complement(n));
-    println!("2's complement: {:#b}", to_twos_complement(n));
+    println!("1's complement: {}", to_ones_complement(n));
+    println!("2's complement: {}", to_twos_complement(n));
     println!("Excess-32:      {}",    e32_output);
     println!("Excess-64:      {}",    e64_output);
 }
@@ -39,67 +39,79 @@ pub fn dummy_main() {
     run(n);
 }
 
-fn to_ones_complement(n: i128) -> i128 {
-    if n.is_positive() || n == 0 { return n; }
-
+fn to_ones_complement(n: i128) -> String {
     let unsigned_bit_string: String = build_unsigned_bit_string(n);
-    let num_unsigned_bits = unsigned_bit_string.len();
 
-    let flipped_bit_string: String = unsigned_bit_string.chars()
-        .take(num_unsigned_bits)
+    if !n.is_negative() { return unsigned_bit_string }
+    dbg!(&unsigned_bit_string);
+
+    let flipped_magnitudes: String = unsigned_bit_string.chars()
+        .take(unsigned_bit_string.len())
         .map(|c| {
             if c == '0' { return '1' }
             '0'
         })
         .collect::<String>();
 
-    let bit_string_1c = format!("1{flipped_bit_string}");
-
-    // minus one because this number is read as 2c, which is 1c + 1
-    i128::from_str_radix(&bit_string_1c, 2).unwrap() - 1
+    format!("1{flipped_magnitudes}")
 }
 
-fn to_twos_complement(n: i128) -> i128 {
+fn to_twos_complement(n: i128) -> String {
     // don't swap to `is_positive`: `is_negative` auto-handles input of zero
-    if n.is_negative() {
-        return to_ones_complement(n) + 1;
+    if !n.is_negative() { return build_unsigned_bit_string(n) }
+    let as_ones_comp = to_ones_complement(n);
+
+    // gotta add 1 to 1c form
+    let magnitude_part = &as_ones_comp[1..];
+
+    let Some(position_of_largest_zero) = magnitude_part.find('0') else {
+        todo!();
+    };
+
+    let mut working_string = String::new();
+
+    for (i, value) in magnitude_part.chars().enumerate() {
+        if i == position_of_largest_zero { working_string.push('1'); continue; }
+        if i < position_of_largest_zero  { working_string.push('0') ; continue; }
+        if i > position_of_largest_zero  { working_string.push(value) }
     }
-    n
+
+    format!("1{}", working_string)
 }
 
 fn build_unsigned_bit_string(n: i128) -> String {
-    if n.is_positive() { return format!("{n:b}") }
-    // format!("{:b}", !n);
+    let n = n.abs();
+
+    if n == 0 { return "0".to_string(); }
 
     // highest power of 2 that "fits in" n,
     // n of 65 returns value of 6
     let num_bits = {
         let mut i: u32 = 0;
         loop {
-            if n == 0 || 2i128.pow(i) > n.abs() { break i + 1 };
+            if 2i128.pow(i) - 1 >= n { break i };
             i += 1;
         }
     };
     dbg!(num_bits);
 
     let mut remaining_value = n;
-    let bit_string = {
+
+    {
         let mut working_bit_string = String::new();
 
-        for bit in (1..=num_bits).rev() {
-            let bit_value = 2i128.pow(bit);
-
-            if bit_value <= remaining_value {
+        for place_value in (0..num_bits).rev().map(|v| 2i128.pow(v)) {
+            dbg!(place_value);
+            if place_value <= remaining_value {
                 working_bit_string.push('1');
-                remaining_value -= bit_value;
+                remaining_value -= place_value;
+                continue;
             }
             working_bit_string.push('0');
         }
 
         working_bit_string
-    };
-
-    bit_string
+    }
 }
 
 fn build_signed_bit_string(n: i128) -> String {
@@ -117,12 +129,16 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     if n.abs() > e {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
+
     let total_bits = i128::ilog2(e) as usize + 1;
     let unpadded_bit_string = build_unsigned_bit_string(n + e);
+    
     dbg!(&n);
     dbg!(&total_bits);
     dbg!(&unpadded_bit_string);
+
     let padding = "0".repeat(total_bits - unpadded_bit_string.len());
+
     Ok(format!("{}{}", padding, unpadded_bit_string))
 }
 
@@ -141,39 +157,44 @@ mod tests {
     }
 
     #[test]
+    fn build_unsigned_bit_string_negative() {
+        assert_eq!(build_unsigned_bit_string(-90), "1011010")
+    }
+
+    #[test]
     fn build_unsigned_bit_string_positive() {
         assert_eq!(build_unsigned_bit_string(37), "100101")
     }
 
     #[test]
     fn ones_complement_zero() {
-        assert_eq!(to_ones_complement(0), 0b0);
+        assert_eq!(to_ones_complement(0), "0".to_string());
     }
 
     #[test]
     fn ones_complement_positive() {
-        assert_eq!(to_ones_complement(25), 0b0011001);
-        assert_eq!(to_ones_complement(35), 0b0100011);
+        assert_eq!(to_ones_complement(25), "11001".to_string());
+        assert_eq!(to_ones_complement(35), "100011".to_string());
     }
 
     #[test]
     fn ones_complement_negative() {
-        assert_eq!(to_ones_complement(-35), 0b101_1100);
-        assert_eq!(to_ones_complement(-90), 0b10100101);
-        assert_eq!(to_ones_complement(-22), 0b10_1001);
-        assert_eq!(to_ones_complement(-42), 0b101_0101);
+        assert_eq!(to_ones_complement(-35), "1011100".to_string());
+        assert_eq!(to_ones_complement(-90), "10100101".to_string());
+        assert_eq!(to_ones_complement(-22), "101001".to_string());
+        assert_eq!(to_ones_complement(-42), "1010101".to_string());
     }
 
     #[test]
     fn twos_complement_zero() {
-        assert_eq!(to_twos_complement(0), 0b0);
+        assert_eq!(to_twos_complement(0), "0".to_string());
     }
 
     #[test]
     fn twos_complement_negative() {
-        assert_eq!(to_twos_complement(-90), 0b10100110);
-        assert_eq!(to_twos_complement(-2), 0b1110);
-        assert_eq!(to_twos_complement(-32), 0b110_0000);
+        assert_eq!(to_twos_complement(-90), "10100110".to_string());
+        assert_eq!(to_twos_complement(-2), "1110".to_string());
+        assert_eq!(to_twos_complement(-32), "1100000".to_string());
     }
 
     #[test]
