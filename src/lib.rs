@@ -16,10 +16,11 @@ pub fn run(n: i128) {
     };
 
     println!("Evaluating decimal {n}...");
+    println!("Unsigned:       {}", build_unsigned_bit_string(n));
     println!("1's complement: {}", to_ones_complement(n));
     println!("2's complement: {}", to_twos_complement(n));
-    println!("Excess-32:      {}",    e32_output);
-    println!("Excess-64:      {}",    e64_output);
+    println!("Excess-32:      {e32_output}");
+    println!("Excess-64:      {e64_output}");
 }
 
 /// A dummy, lightweight, non-`clap` main function.
@@ -43,7 +44,6 @@ fn to_ones_complement(n: i128) -> String {
     let unsigned_bit_string: String = build_unsigned_bit_string(n);
 
     if !n.is_negative() { return unsigned_bit_string }
-    dbg!(&unsigned_bit_string);
 
     let flipped_magnitudes: String = unsigned_bit_string.chars()
         .take(unsigned_bit_string.len())
@@ -57,26 +57,27 @@ fn to_ones_complement(n: i128) -> String {
 }
 
 fn to_twos_complement(n: i128) -> String {
-    // don't swap to `is_positive`: `is_negative` auto-handles input of zero
     if !n.is_negative() { return build_unsigned_bit_string(n) }
+
     let as_ones_comp = to_ones_complement(n);
 
     // gotta add 1 to 1c form
     let magnitude_part = &as_ones_comp[1..];
 
-    let Some(position_of_largest_zero) = magnitude_part.find('0') else {
+    let Some(position_of_smallest_zero) = magnitude_part.rfind('0') else {
         todo!();
     };
 
     let mut working_string = String::new();
 
     for (i, value) in magnitude_part.chars().enumerate() {
-        if i == position_of_largest_zero { working_string.push('1'); continue; }
-        if i < position_of_largest_zero  { working_string.push('0') ; continue; }
-        if i > position_of_largest_zero  { working_string.push(value) }
+        dbg!((i, value));
+        if i == position_of_smallest_zero { working_string.push('1'); continue; }
+        if i > position_of_smallest_zero  { working_string.push('0') ; continue; }
+        if i < position_of_smallest_zero  { working_string.push(value) }
     }
 
-    format!("1{}", working_string)
+    format!("1{working_string}")
 }
 
 fn build_unsigned_bit_string(n: i128) -> String {
@@ -89,11 +90,10 @@ fn build_unsigned_bit_string(n: i128) -> String {
     let num_bits = {
         let mut i: u32 = 0;
         loop {
-            if 2i128.pow(i) - 1 >= n { break i };
+            if 2i128.pow(i) > n { break i };
             i += 1;
         }
     };
-    dbg!(num_bits);
 
     let mut remaining_value = n;
 
@@ -101,7 +101,6 @@ fn build_unsigned_bit_string(n: i128) -> String {
         let mut working_bit_string = String::new();
 
         for place_value in (0..num_bits).rev().map(|v| 2i128.pow(v)) {
-            dbg!(place_value);
             if place_value <= remaining_value {
                 working_bit_string.push('1');
                 remaining_value -= place_value;
@@ -114,17 +113,13 @@ fn build_unsigned_bit_string(n: i128) -> String {
     }
 }
 
-fn build_signed_bit_string(n: i128) -> String {
-    let unsigned_bit_string = build_unsigned_bit_string(n);
-
-    if n.is_negative() {
-        return format!("1{}", unsigned_bit_string);
-    }
-
-    unsigned_bit_string
-}
-
 /// Converts a value `n` to excess `e`.
+///
+/// # Errors
+///
+/// Returns `Err(msg)`, where `msg` tells you retells what went wrong.
+///
+/// Throws an error if the value `n` is too large for Excess-`e` notation.
 pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     if n.abs() > e {
         return Err(format!("input {n} too large for Excess-{e}"))
@@ -133,13 +128,9 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     let total_bits = i128::ilog2(e) as usize + 1;
     let unpadded_bit_string = build_unsigned_bit_string(n + e);
     
-    dbg!(&n);
-    dbg!(&total_bits);
-    dbg!(&unpadded_bit_string);
-
     let padding = "0".repeat(total_bits - unpadded_bit_string.len());
 
-    Ok(format!("{}{}", padding, unpadded_bit_string))
+    Ok(format!("{padding}{unpadded_bit_string}"))
 }
 
 #[cfg(test)]
@@ -193,7 +184,7 @@ mod tests {
     #[test]
     fn twos_complement_negative() {
         assert_eq!(to_twos_complement(-90), "10100110".to_string());
-        assert_eq!(to_twos_complement(-2), "1110".to_string());
+        assert_eq!(to_twos_complement(-2), "110".to_string());
         assert_eq!(to_twos_complement(-32), "1100000".to_string());
     }
 
