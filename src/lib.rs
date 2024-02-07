@@ -158,11 +158,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn radix_test() {
-        assert_eq!(i128::from_str_radix("11011101", 2).unwrap(), 221);
-    }
-
-    #[test]
     fn build_unsigned_bit_string_zero() {
         assert_eq!(build_unsigned_bit_string(0), "0")
     }
