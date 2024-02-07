@@ -6,19 +6,21 @@
 
 pub fn run(n: i128) {
     let e32_output = match to_excess(32, n) {
-        Ok(bit_string) => bit_string,
+        Ok(bit_string) => pretty_bit_string(bit_string),
         Err(msg) => msg
     };
 
     let e64_output = match to_excess(64, n) {
-        Ok(bit_string) => bit_string,
+        Ok(bit_string) => pretty_bit_string(bit_string),
         Err(msg) => msg
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Unsigned:       {}", build_unsigned_bit_string(n));
-    println!("1's complement: {}", to_ones_complement(n));
-    println!("2's complement: {}", to_twos_complement(n));
+    println!("Unsigned:       {}", pretty_bit_string(
+        build_unsigned_bit_string(n)
+    ));
+    println!("1's complement: {}", pretty_bit_string(to_ones_complement(n)));
+    println!("2's complement: {}", pretty_bit_string(to_twos_complement(n)));
     println!("Excess-32:      {e32_output}");
     println!("Excess-64:      {e64_output}");
 }
@@ -38,6 +40,18 @@ pub fn dummy_main() {
     };
 
     run(n);
+}
+
+fn pretty_bit_string(bit_string: String) -> String {
+    bit_string
+        .char_indices()
+        .rev()
+        .map(|(i, c)| {
+            // i.to_string()
+            if i != 0 && i % 4 == 0 { return format!("{c}_") }
+            c.to_string()
+        })
+        .collect::<String>()
 }
 
 fn to_ones_complement(n: i128) -> String {
@@ -127,7 +141,7 @@ fn build_unsigned_bit_string(n: i128) -> String {
 ///
 /// Throws an error if the value `n` is too large for Excess-`e` notation.
 pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
-    if n.abs() > e {
+    if n.abs() > e - 1 {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
 
