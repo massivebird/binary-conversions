@@ -16,7 +16,7 @@ pub fn run(n: i128) {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Unsigned:       {}", build_unsigned_bit_string(n));
+    println!("Unsigned:       {}", unsigned_bit_string(n));
     println!("1's complement: {}", to_ones_complement(n));
     println!("2's complement: {}", to_twos_complement(n));
     println!("Excess-32:      {e32_output}");
@@ -27,7 +27,7 @@ pub fn run(n: i128) {
 /// I have to demonstrate this code in class, but Rust Playground
 /// does not support command line arguments.
 /// This main function expects input via stdin.
-pub fn dummy_main() {
+fn main() {
     println!("Enter a number to convert to binary:");
     let n: i128 = loop {
         let mut input = String::new();
@@ -41,7 +41,7 @@ pub fn dummy_main() {
 }
 
 fn to_ones_complement(n: i128) -> String {
-    let unsigned_bit_string: String = build_unsigned_bit_string(n);
+    let unsigned_bit_string: String = unsigned_bit_string(n);
 
     if !n.is_negative() { return unsigned_bit_string }
 
@@ -57,7 +57,7 @@ fn to_ones_complement(n: i128) -> String {
 }
 
 fn to_twos_complement(n: i128) -> String {
-    if !n.is_negative() { return build_unsigned_bit_string(n) }
+    if !n.is_negative() { return unsigned_bit_string(n) }
 
     let as_ones_comp = to_ones_complement(n);
 
@@ -86,7 +86,7 @@ fn to_twos_complement(n: i128) -> String {
         .collect::<String>()
 }
 
-fn build_unsigned_bit_string(n: i128) -> String {
+fn unsigned_bit_string(n: i128) -> String {
     let n = n.abs();
 
     if n == 0 { return "0".to_string(); }
@@ -132,7 +132,7 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     }
 
     let total_bits = i128::ilog2(e) as usize + 1;
-    let unpadded_bit_string = build_unsigned_bit_string(n + e);
+    let unpadded_bit_string = unsigned_bit_string(n + e);
     
     let padding = "0".repeat(total_bits - unpadded_bit_string.len());
 
@@ -144,18 +144,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn build_unsigned_bit_string_zero() {
-        assert_eq!(build_unsigned_bit_string(0), "0")
+    fn unsigned_bit_string_zero() {
+        assert_eq!(unsigned_bit_string(0), "0")
     }
 
     #[test]
-    fn build_unsigned_bit_string_negative() {
-        assert_eq!(build_unsigned_bit_string(-90), "1011010")
+    fn unsigned_bit_string_negative() {
+        assert_eq!(unsigned_bit_string(-90), "1011010")
     }
 
     #[test]
-    fn build_unsigned_bit_string_positive() {
-        assert_eq!(build_unsigned_bit_string(37), "100101")
+    fn unsigned_bit_string_positive() {
+        assert_eq!(unsigned_bit_string(37), "100101")
     }
 
     #[test]
