@@ -65,19 +65,25 @@ fn to_twos_complement(n: i128) -> String {
     let magnitude_part = &as_ones_comp[1..];
 
     let Some(position_of_smallest_zero) = magnitude_part.rfind('0') else {
+        // all ones -> one followed by all zeroes?
+        // do I need to do this? should it be done? is it ethical?
         todo!();
     };
 
-    let mut working_string = String::new();
-
-    for (i, value) in magnitude_part.chars().enumerate() {
-        dbg!((i, value));
-        if i == position_of_smallest_zero { working_string.push('1'); continue; }
-        if i > position_of_smallest_zero  { working_string.push('0') ; continue; }
-        if i < position_of_smallest_zero  { working_string.push(value) }
-    }
-
-    format!("1{working_string}")
+    // adding 1 to a bit string goes like this:
+    // (1) Locate least-valued zero,
+    // (2) Flip that zero to a one (1), then
+    // (3) Flip all ones to the right of that position.
+    // I like the iterative approach.
+    String::from("1") + &magnitude_part
+        .chars()
+        .enumerate()
+        .map(|(i, value)| {
+            if i == position_of_smallest_zero { return '1' }
+            if i > position_of_smallest_zero  { return '0' }
+            value
+        })
+        .collect::<String>()
 }
 
 fn build_unsigned_bit_string(n: i128) -> String {
