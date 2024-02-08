@@ -141,9 +141,9 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
 
-    let total_bits = i128::ilog2(e) as usize + 1;
     let unpadded_bit_string = unsigned_bit_string(n + e);
     
+    let total_bits = i128::ilog2(e) as usize + 1;
     let padding = "0".repeat(total_bits - unpadded_bit_string.len());
 
     Ok(format!("{padding}{unpadded_bit_string}"))
