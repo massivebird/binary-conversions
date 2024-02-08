@@ -66,9 +66,20 @@ fn run_to_decimal() {
     };
 
     println!("Evaluating binary number {bit_string} as different notations...");
-    // println!("Unsigned:       {}", unsigned_bit_string(b));
+    println!("Unsigned:       {}", from_unsigned(bit_string));
     // println!("1's complement: {}", to_ones_complement(b));
     // println!("2's complement: {}", to_twos_complement(b));
+}
+
+fn from_unsigned(bit_string: String) -> i128 {
+    bit_string
+        .chars()
+        .rev()
+        .enumerate()
+        .fold(0, |acc, (index, char)| {
+            if char == '0' { return acc; }
+            acc + 2i128.pow(index as u32)
+        })
 }
 
 /// A dummy, lightweight, non-`clap` main function.
