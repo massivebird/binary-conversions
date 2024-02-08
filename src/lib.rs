@@ -14,16 +14,6 @@
 //! 6) Excess-128
 
 pub fn run(n: i128) {
-    let e32_output = match to_excess(32, n) {
-        Ok(bit_string) => bit_string,
-        Err(msg) => msg
-    };
-
-    let e64_output = match to_excess(64, n) {
-        Ok(bit_string) => bit_string,
-        Err(msg) => msg
-    };
-
     let excess_output = |e, n| {
         match to_excess(e, n) {
             Ok(bit_string) => bit_string,
