@@ -30,11 +30,7 @@ pub fn run(n: i128) {
     println!("Excess-128:     {}", excess_output(128, n));
 }
 
-/// A dummy, lightweight, non-`clap` main function.
-/// I have to demonstrate this code in class, but Rust Playground
-/// does not support command line arguments.
-/// This main function expects input via stdin.
-pub fn main() {
+pub fn run_to_binary() {
     println!("Enter a number to convert to binary:");
     let n: i128 = loop {
         let mut input = String::new();
@@ -44,7 +40,57 @@ pub fn main() {
         }
     };
 
-    run(n);
+    let excess_output = |e, n| {
+        match to_excess(e, n) {
+            Ok(bit_string) => bit_string,
+            Err(msg) => msg
+        }
+    };
+
+    println!("Evaluating decimal {n}...");
+    println!("Unsigned:       {}", unsigned_bit_string(n));
+    println!("1's complement: {}", to_ones_complement(n));
+    println!("2's complement: {}", to_twos_complement(n));
+    println!("Excess-32:      {}", excess_output(32, n));
+    println!("Excess-64:      {}", excess_output(64, n));
+    println!("Excess-128:     {}", excess_output(128, n));
+}
+
+fn run_to_decimal() {
+    println!("Enter a number to convert to decimal:");
+    let bit_string: String = loop {
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+        if !input.trim().chars().all(|c| c == '1' || c == '0') { continue };
+        break input.trim().to_string();
+    };
+
+    println!("Evaluating binary number {bit_string} as different notations...");
+    // println!("Unsigned:       {}", unsigned_bit_string(b));
+    // println!("1's complement: {}", to_ones_complement(b));
+    // println!("2's complement: {}", to_twos_complement(b));
+}
+
+/// A dummy, lightweight, non-`clap` main function.
+/// I have to demonstrate this code in class, but Rust Playground
+/// does not support command line arguments.
+/// This main function expects input via stdin.
+pub fn main() {
+    println!("Converting (1) decimal to binary, or (2) binary to decimal?");
+    let mode: i128 = loop {
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+        if let Ok(n) = input.trim().parse::<i128>() {
+            if n != 1 && n != 2 { continue }
+            break n;
+        }
+    };
+
+    match mode {
+        1 => run_to_binary(),
+        2 => run_to_decimal(),
+        _ => unreachable!(),
+    }
 }
 
 fn to_ones_complement(n: i128) -> String {
@@ -142,7 +188,7 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     }
 
     let unpadded_bit_string = unsigned_bit_string(n + e);
-    
+
     let total_bits = i128::ilog2(e) as usize + 1;
     let padding = "0".repeat(total_bits - unpadded_bit_string.len());
 
