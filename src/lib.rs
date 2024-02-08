@@ -348,6 +348,11 @@ mod tests {
     }
 
     #[test]
+    fn from_signed_positive() {
+        assert_eq!(from_signed("01000"), 8);
+    }
+
+    #[test]
     fn from_signed_zero() {
         assert_eq!(from_signed("0"), 0);
     }
@@ -373,8 +378,18 @@ mod tests {
     }
 
     #[test]
+    fn from_ones_complement_negative() {
+        assert_eq!(from_ones_complement("110"), -1);
+    }
+
+    #[test]
     fn from_ones_complement_zero() {
         assert_eq!(from_ones_complement("0"), 0);
+    }
+
+    #[test]
+    fn from_unsigned_positive() {
+        assert_eq!(from_unsigned("110"), 6);
     }
 
     #[test]
