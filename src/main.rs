@@ -18,7 +18,7 @@ fn main() -> std::io::Result<()> {
         .get_matches();
 
     if matches.get_flag("dummy") {
-        binary_conversions::dummy_main();
+        binary_conversions::main();
         return Ok(());
     }
 

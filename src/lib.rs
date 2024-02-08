@@ -27,7 +27,7 @@ pub fn run(n: i128) {
 /// I have to demonstrate this code in class, but Rust Playground
 /// does not support command line arguments.
 /// This main function expects input via stdin.
-fn main() {
+pub fn main() {
     println!("Enter a number to convert to binary:");
     let n: i128 = loop {
         let mut input = String::new();
