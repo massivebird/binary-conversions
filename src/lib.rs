@@ -41,9 +41,10 @@ pub fn main() {
 }
 
 fn to_ones_complement(n: i128) -> String {
-    let mut unsigned_bit_string: String = unsigned_bit_string(n);
+    let unsigned_bit_string: String = unsigned_bit_string(n);
 
     if !n.is_negative() {
+        // only attach sign bit `0` if the input is nonzero
         match unsigned_bit_string.as_str() {
             "0" => return "0".to_string(),
             _ => return format!("0{unsigned_bit_string}"),
@@ -62,7 +63,8 @@ fn to_ones_complement(n: i128) -> String {
 }
 
 fn to_twos_complement(n: i128) -> String {
-    if !n.is_negative() { return unsigned_bit_string(n) }
+    // use 1c fn instead of unsigned fn to include the sign bit of zero
+    if !n.is_negative() { return to_ones_complement(n) }
 
     let as_ones_comp = to_ones_complement(n);
 
@@ -181,6 +183,13 @@ mod tests {
         assert_eq!(to_ones_complement(-90), "10100101".to_string());
         assert_eq!(to_ones_complement(-22), "101001".to_string());
         assert_eq!(to_ones_complement(-42), "1010101".to_string());
+    }
+
+    #[test]
+    fn twos_complement_positive() {
+        assert_eq!(to_twos_complement(25), "011001".to_string());
+        assert_eq!(to_twos_complement(129), "010000001".to_string());
+        assert_eq!(to_twos_complement(7), "0111".to_string());
     }
 
     #[test]
