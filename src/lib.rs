@@ -41,9 +41,14 @@ pub fn main() {
 }
 
 fn to_ones_complement(n: i128) -> String {
-    let unsigned_bit_string: String = unsigned_bit_string(n);
+    let mut unsigned_bit_string: String = unsigned_bit_string(n);
 
-    if !n.is_negative() { return unsigned_bit_string }
+    if !n.is_negative() {
+        match unsigned_bit_string.as_str() {
+            "0" => return "0".to_string(),
+            _ => return format!("0{unsigned_bit_string}"),
+        }
+    }
 
     let flipped_magnitudes: String = unsigned_bit_string.chars()
         .take(unsigned_bit_string.len())
@@ -165,8 +170,9 @@ mod tests {
 
     #[test]
     fn ones_complement_positive() {
-        assert_eq!(to_ones_complement(25), "11001".to_string());
-        assert_eq!(to_ones_complement(35), "100011".to_string());
+        assert_eq!(to_ones_complement(25), "011001".to_string());
+        assert_eq!(to_ones_complement(35), "0100011".to_string());
+        assert_eq!(to_ones_complement(7), "0111".to_string());
     }
 
     #[test]
