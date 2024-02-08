@@ -1,8 +1,17 @@
-// TODO: ask if I can use native binary representations (do NOT make this a GitHub issue)
-
-// Binary representations of integers are in twos complement.
-// That's confusing! So we convert the number to standard [un]signed magnitude
-// before making conversions (if necessary).
+//! Author: Garrett Drake
+//! Project: Signed Integer Representation
+//! Submission Date: TBD
+//! Description:
+//!
+//! This project allows users to convert decimal to/from the following
+//! binary notations:
+//! 
+//! 1) Unsigned
+//! 2) One's complement
+//! 3) Two's complement
+//! 4) Excess-32
+//! 5) Excess-64
+//! 6) Excess-128
 
 pub fn run(n: i128) {
     let e32_output = match to_excess(32, n) {
@@ -15,12 +24,20 @@ pub fn run(n: i128) {
         Err(msg) => msg
     };
 
+    let excess_output = |e, n| {
+        match to_excess(e, n) {
+            Ok(bit_string) => bit_string,
+            Err(msg) => msg
+        }
+    };
+
     println!("Evaluating decimal {n}...");
     println!("Unsigned:       {}", unsigned_bit_string(n));
     println!("1's complement: {}", to_ones_complement(n));
     println!("2's complement: {}", to_twos_complement(n));
-    println!("Excess-32:      {e32_output}");
-    println!("Excess-64:      {e64_output}");
+    println!("Excess-32:      {}", excess_output(32, n));
+    println!("Excess-64:      {}", excess_output(64, n));
+    println!("Excess-128:     {}", excess_output(128, n));
 }
 
 /// A dummy, lightweight, non-`clap` main function.
@@ -66,10 +83,8 @@ fn to_twos_complement(n: i128) -> String {
     // use 1c fn instead of unsigned fn to include the sign bit of zero
     if !n.is_negative() { return to_ones_complement(n) }
 
-    let as_ones_comp = to_ones_complement(n);
-
     // gotta add 1 to 1c form
-    let magnitude_part = &as_ones_comp[1..];
+    let magnitude_part = &to_ones_complement(n)[1..];
 
     let Some(position_of_smallest_zero) = magnitude_part.rfind('0') else {
         // all ones -> one followed by all zeroes?
@@ -98,8 +113,6 @@ fn unsigned_bit_string(n: i128) -> String {
 
     if n == 0 { return "0".to_string(); }
 
-    // highest power of 2 that "fits in" n,
-    // n of 65 returns value of 6
     let num_bits = {
         let mut i: u32 = 0;
         loop {
@@ -108,10 +121,10 @@ fn unsigned_bit_string(n: i128) -> String {
         }
     };
 
-    let mut remaining_value = n;
-
     {
         let mut working_bit_string = String::new();
+
+        let mut remaining_value = n;
 
         for place_value in (0..num_bits).rev().map(|v| 2i128.pow(v)) {
             if place_value <= remaining_value {
