@@ -57,7 +57,7 @@ pub fn run_to_binary() {
 }
 
 fn run_to_decimal() {
-    println!("Enter a number to convert to decimal:");
+    println!("Enter a bit string to convert to decimal:");
     let bit_string: String = loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
@@ -65,13 +65,77 @@ fn run_to_decimal() {
         break input.trim().to_string();
     };
 
+    let ok_value_or_err_msg = |r: Result<i128, String>| {
+        match r {
+            Ok(a) => a.to_string(),
+            Err(msg) => msg,
+        }
+    };
+
     println!("Evaluating binary number {bit_string} as different notations...");
-    println!("Unsigned:       {}", from_unsigned(bit_string));
-    // println!("1's complement: {}", to_ones_complement(b));
-    // println!("2's complement: {}", to_twos_complement(b));
+    println!("Unsigned:       {}", from_unsigned(&bit_string));
+    println!("Signed:         {}", from_signed(&bit_string));
+    println!("1's complement: {}", from_ones_complement(&bit_string));
+    println!("2's complement: {}", ok_value_or_err_msg(from_twos_complement(&bit_string)));
 }
 
-fn from_unsigned(bit_string: String) -> i128 {
+fn from_signed(bit_string: &str) -> i128 {
+    let sign_bit = bit_string.chars().nth(0).unwrap();
+    if sign_bit == '0' { return from_unsigned(bit_string) }
+    -1 * from_unsigned(&bit_string.chars().skip(1).collect::<String>())
+}
+
+fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
+    let sign_bit = bit_string.chars().nth(0).unwrap();
+    // positive -> unchanged from unsigned form
+    if sign_bit == '0' { return Ok(from_unsigned(bit_string)) }
+
+    let magnitude = bit_string.chars().skip(1).collect::<String>();
+
+    // since we have to subtract 1 from this bit string,
+    // 10000 -> 01111 (overflow??)
+    if magnitude.chars().all(|c| c == '0') {
+        return Err("not enough bits".to_string())
+    }
+
+    // 10010 -> 10001
+    // 10100 -> 10011
+    // 11111 -> 11110
+    let Some(position_of_smallest_one) = magnitude.rfind('1') else {
+        // all ones -> one followed by all zeroes?
+        // do I need to do this? should it be done? is it ethical?
+        todo!();
+    };
+
+    // flip the magnitude AFTER subtracting one
+    let flipped_magnitude = flip_bits(&magnitude
+        .chars()
+        .enumerate()
+        .map(|(i, value)| {
+            if i == position_of_smallest_one { return '0' }
+            if i > position_of_smallest_one  { return '1' }
+            value
+        })
+        .collect::<String>()
+    );
+
+    return Ok(
+        -1 * from_unsigned(&flipped_magnitude)
+    );
+}
+
+fn from_ones_complement(bit_string: &str) -> i128 {
+    let sign_bit = bit_string.chars().nth(0).unwrap();
+    // positive -> unchanged from unsigned form
+    if sign_bit == '0' { return from_unsigned(bit_string) }
+
+    let magnitude_bits = bit_string.chars().skip(1).collect::<String>();
+    let flipped_magnitude = flip_bits(&magnitude_bits);
+
+    return -1 * from_unsigned(&flipped_magnitude);
+}
+
+fn from_unsigned(bit_string: &str) -> i128 {
     bit_string
         .chars()
         .rev()
@@ -115,13 +179,7 @@ fn to_ones_complement(n: i128) -> String {
         }
     }
 
-    let flipped_magnitudes: String = unsigned_bit_string.chars()
-        .take(unsigned_bit_string.len())
-        .map(|c| {
-            if c == '0' { return '1' }
-            '0'
-        })
-        .collect::<String>();
+    let flipped_magnitudes: String = flip_bits(&unsigned_bit_string);
 
     format!("1{flipped_magnitudes}")
 }
@@ -206,6 +264,15 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     Ok(format!("{padding}{unpadded_bit_string}"))
 }
 
+fn flip_bits(bit_string: &str) -> String {
+    bit_string.chars()
+        .map(|c| {
+            if c == '0' { return '1' }
+            '0'
+        })
+        .collect::<String>()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -278,5 +345,40 @@ mod tests {
     fn excess_64_negative() {
         assert_eq!(to_excess(64, -22), Ok("0101010".to_string()));
         assert_eq!(to_excess(64, -37), Ok("0011011".to_string()));
+    }
+
+    #[test]
+    fn from_signed_zero() {
+        assert_eq!(from_signed("0"), 0);
+    }
+
+    #[test]
+    fn from_signed_negative() {
+        assert_eq!(from_signed("11000000"), -64);
+    }
+
+    #[test]
+    fn from_twos_complement_positive() {
+        assert_eq!(from_twos_complement("011000"), Ok(24));
+    }
+
+    #[test]
+    fn from_twos_complement_negative() {
+        assert_eq!(from_twos_complement("1011011"), Ok(-37));
+    }
+
+    #[test]
+    fn from_twos_complement_zero() {
+        assert_eq!(from_twos_complement("0"), Ok(0));
+    }
+
+    #[test]
+    fn from_ones_complement_zero() {
+        assert_eq!(from_ones_complement("0"), 0);
+    }
+
+    #[test]
+    fn from_unsigned_zero() {
+        assert_eq!(from_unsigned("0"), 0);
     }
 }
