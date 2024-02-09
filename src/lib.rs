@@ -195,9 +195,9 @@ fn to_twos_complement(n: i128) -> String {
 ///
 /// # Errors
 ///
-/// Returns `Err(msg)`, where `msg` tells you retells what went wrong.
-///
 /// Throws an error if the value `n` is too large for Excess-`e` notation.
+///
+/// Returns an error message detailing the incident.
 pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     if n.abs() > e - 1 {
         return Err(format!("input {n} too large for Excess-{e}"))
@@ -251,29 +251,21 @@ fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
 
     let magnitude = bit_string.chars().skip(1).collect::<String>();
 
-    // since we have to subtract 1 from this bit string,
-    // 10000 -> 01111 (overflow??)
-    if magnitude.chars().all(|c| c == '0') {
-        return Err("not enough bits".to_string())
-    }
-
-    let Some(position_of_smallest_one) = magnitude.rfind('1') else {
-        // do I need to do this? should it be done? is it ethical?
-        todo!();
+    let flipped_magnitude =
+    if let Some(position_of_smallest_one) = magnitude.rfind('1') {
+        flip_bits(&magnitude
+            .chars()
+            .enumerate()
+            .map(|(i, value)| {
+                if i == position_of_smallest_one { return '0' }
+                if i > position_of_smallest_one  { return '1' }
+                value
+            })
+            .collect::<String>()
+        )
+    } else {
+        bit_string.to_string()
     };
-
-    // flip the magnitude AFTER subtracting one, which is done by
-    // flipping the smallest 1 bit, then flipping all lesser value bits!
-    let flipped_magnitude = flip_bits(&magnitude
-        .chars()
-        .enumerate()
-        .map(|(i, value)| {
-            if i == position_of_smallest_one { return '0' }
-            if i > position_of_smallest_one  { return '1' }
-            value
-        })
-        .collect::<String>()
-    );
 
     return Ok(
         -1 * from_unsigned(&flipped_magnitude)
@@ -422,6 +414,7 @@ mod tests {
     #[test]
     fn from_twos_complement_negative() {
         assert_eq!(from_twos_complement("1011011"), Ok(-37));
+        assert_eq!(from_twos_complement("10000000"), Ok(-128));
     }
 
     #[test]
