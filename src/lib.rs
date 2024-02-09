@@ -22,12 +22,12 @@ pub fn run(n: i128) {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Unsigned:       {}", unsigned_bit_string(n));
-    println!("1's complement: {}", to_ones_complement(n));
-    println!("2's complement: {}", to_twos_complement(n));
-    println!("Excess-32:      {}", excess_output(32, n));
-    println!("Excess-64:      {}", excess_output(64, n));
-    println!("Excess-128:     {}", excess_output(128, n));
+    println!("Unsigned:        {}", unsigned_bit_string(n));
+    println!("Ones complement: {}", to_ones_complement(n));
+    println!("Ones complement: {}", to_twos_complement(n));
+    // println!("Excess-32:      {}", excess_output(32, n));
+    // println!("Excess-64:      {}", excess_output(64, n));
+    println!("Excess-128:      {}", excess_output(128, n));
 }
 
 pub fn run_to_binary() {
@@ -48,12 +48,12 @@ pub fn run_to_binary() {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Unsigned:       {}", unsigned_bit_string(n));
-    println!("1's complement: {}", to_ones_complement(n));
-    println!("2's complement: {}", to_twos_complement(n));
-    println!("Excess-32:      {}", excess_output(32, n));
-    println!("Excess-64:      {}", excess_output(64, n));
-    println!("Excess-128:     {}", excess_output(128, n));
+    println!("Unsigned:        {}", unsigned_bit_string(n));
+    println!("Twos complement: {}", to_ones_complement(n));
+    println!("Ones complement: {}", to_twos_complement(n));
+    // println!("Excess-32:      {}", excess_output(32, n));
+    // println!("Excess-64:      {}", excess_output(64, n));
+    println!("Excess-128:      {}", excess_output(128, n));
 }
 
 fn run_to_decimal() {
@@ -73,11 +73,11 @@ fn run_to_decimal() {
     };
 
     println!("Evaluating bit string {bit_string} as different notations...");
-    println!("Unsigned:       {}", from_unsigned(&bit_string));
-    println!("Signed:         {}", from_signed(&bit_string));
-    println!("1's complement: {}", from_ones_complement(&bit_string));
-    println!("2's complement: {}", ok_value_or_err_msg(from_twos_complement(&bit_string)));
-    println!("Excess-128:     {}", ok_value_or_err_msg(from_excess_128(&bit_string)));
+    println!("Unsigned:          {}", from_unsigned(&bit_string));
+    println!("Signed magnitude:  {}", from_signed(&bit_string));
+    println!("Ones complement:   {}", from_ones_complement(&bit_string));
+    println!("Twos complement:   {}", ok_value_or_err_msg(from_twos_complement(&bit_string)));
+    println!("Excess-128:        {}", ok_value_or_err_msg(from_excess_128(&bit_string)));
 }
 
 fn from_excess_128(bit_string: &str) -> Result<i128, String> {
