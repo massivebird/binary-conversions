@@ -4,14 +4,12 @@
 //! Description:
 //!
 //! This project allows users to convert decimal to/from the following
-//! binary notations:
+//! 8-bit binary notations:
 //! 
-//! 1) Unsigned
+//! 1) Signed magnitude
 //! 2) One's complement
 //! 3) Two's complement
-//! 4) Excess-32
-//! 5) Excess-64
-//! 6) Excess-128
+//! 4) Excess-128
 
 pub fn run(n: i128) {
     let excess_output = |e, n| {
@@ -22,12 +20,12 @@ pub fn run(n: i128) {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Unsigned:        {}", unsigned_bit_string(n));
-    println!("Ones complement: {}", to_ones_complement(n));
-    println!("Ones complement: {}", to_twos_complement(n));
+    // println!("Unsigned:        {}", unsigned_bit_string(n));
+    println!("Ones complement:  {}", to_ones_complement(n));
+    println!("Ones complement:  {}", to_twos_complement(n));
     // println!("Excess-32:      {}", excess_output(32, n));
     // println!("Excess-64:      {}", excess_output(64, n));
-    println!("Excess-128:      {}", excess_output(128, n));
+    println!("Excess-128:       {}", excess_output(128, n));
 }
 
 pub fn run_to_binary() {
@@ -48,7 +46,7 @@ pub fn run_to_binary() {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Unsigned:        {}", unsigned_bit_string(n));
+    println!("Unsigned:        {}", to_unsigned_unpadded(n));
     println!("Twos complement: {}", to_ones_complement(n));
     println!("Ones complement: {}", to_twos_complement(n));
     // println!("Excess-32:      {}", excess_output(32, n));
@@ -86,9 +84,16 @@ fn from_excess_128(bit_string: &str) -> Result<i128, String> {
         return Err(format!("too many bits: maximum of {maximum_bits}"));
     }
 
-    let padding = "0".repeat(maximum_bits - bit_string.len());
-    let bit_string = format!("{padding}{bit_string}");
     Ok(from_unsigned(&bit_string) - 128)
+}
+
+/// Pads a bit string so that it expresses the same value in 
+/// a specified number of bits.
+fn pad(num_bits: usize, bit_string: &str) -> String {
+    assert!(num_bits >= bit_string.len());
+
+    let padding = "0".repeat(num_bits - bit_string.len());
+    format!("{padding}{bit_string}")
 }
 
 fn from_signed(bit_string: &str) -> i128 {
@@ -180,26 +185,25 @@ pub fn main() {
 }
 
 fn to_ones_complement(n: i128) -> String {
-    let unsigned_bit_string: String = unsigned_bit_string(n);
+    let unsigned_bit_string: String = to_unsigned_unpadded(n);
 
     if !n.is_negative() {
         // only attach sign bit `0` if the input is nonzero
         match unsigned_bit_string.as_str() {
-            "0" => return "0".to_string(),
-            _ => return format!("0{unsigned_bit_string}"),
+            "0" => return pad(8, "0"),
+            _ => return pad(8, &unsigned_bit_string),
         }
     }
 
     let flipped_magnitude: String = flip_bits(&unsigned_bit_string);
 
-    format!("1{flipped_magnitude}")
+    // format!("1{}", pad(7, &flipped_magnitude))
+    format!("1{}", pad(7, &flipped_magnitude))
 }
 
 fn to_twos_complement(n: i128) -> String {
-    // use 1c fn instead of unsigned fn to include the sign bit of zero
     if !n.is_negative() { return to_ones_complement(n) }
 
-    // gotta add 1 to 1c form
     let magnitude = &to_ones_complement(n)[1..];
 
     let Some(position_of_smallest_zero) = magnitude.rfind('0') else {
@@ -212,8 +216,7 @@ fn to_twos_complement(n: i128) -> String {
     // (1) Locate least-valued zero,
     // (2) Flip that zero to a one (1), then
     // (3) Flip all ones to the right of that position.
-    // I like the iterative approach.
-    String::from("1") + &magnitude
+    let ones_comp_plus_one = magnitude
         .chars()
         .enumerate()
         .map(|(i, value)| {
@@ -221,14 +224,18 @@ fn to_twos_complement(n: i128) -> String {
             if i > position_of_smallest_zero  { return '0' }
             value
         })
-        .collect::<String>()
+        .collect::<String>();
+
+    // format!("1{}", pad(7, &ones_comp_plus_one))
+    format!("1{ones_comp_plus_one}")
 }
 
-fn unsigned_bit_string(n: i128) -> String {
+fn to_unsigned_unpadded(n: i128) -> String {
     let n = n.abs();
 
     if n == 0 { return "0".to_string(); }
 
+    // let num_bits = 8;
     let num_bits = {
         let mut i: u32 = 0;
         loop {
@@ -267,12 +274,11 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
 
-    let unpadded_bit_string = unsigned_bit_string(n + e);
+    let unpadded_bit_string = to_unsigned_unpadded(n + e);
 
-    let total_bits = i128::ilog2(e) as usize + 1;
-    let padding = "0".repeat(total_bits - unpadded_bit_string.len());
+    // let total_bits = i128::ilog2(e) as usize + 1;
 
-    Ok(format!("{padding}{unpadded_bit_string}"))
+    Ok(pad(8, &unpadded_bit_string))
 }
 
 fn flip_bits(bit_string: &str) -> String {
@@ -286,76 +292,77 @@ fn flip_bits(bit_string: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    // 1's comp: https://www.compscilib.com/calculate/decimal-to-ones-complement
     use super::*;
 
-    #[test]
-    fn unsigned_bit_string_zero() {
-        assert_eq!(unsigned_bit_string(0), "0")
-    }
+    // #[test]
+    // fn unsigned_bit_string_zero() {
+    //     assert_eq!(to_unsigned_unpadded(0), "00000000")
+    // }
 
-    #[test]
-    fn unsigned_bit_string_negative() {
-        assert_eq!(unsigned_bit_string(-90), "1011010")
-    }
+    // #[test]
+    // fn unsigned_bit_string_negative() {
+    //     assert_eq!(to_unsigned_unpadded(-90), "01011010")
+    // }
 
-    #[test]
-    fn unsigned_bit_string_positive() {
-        assert_eq!(unsigned_bit_string(37), "100101")
-    }
+    // #[test]
+    // fn unsigned_bit_string_positive() {
+    //     assert_eq!(to_unsigned_unpadded(37), "00100101")
+    // }
 
     #[test]
     fn ones_complement_zero() {
-        assert_eq!(to_ones_complement(0), "0".to_string());
+        assert_eq!(to_ones_complement(0), "00000000".to_string());
     }
 
     #[test]
     fn ones_complement_positive() {
-        assert_eq!(to_ones_complement(25), "011001".to_string());
-        assert_eq!(to_ones_complement(35), "0100011".to_string());
-        assert_eq!(to_ones_complement(7), "0111".to_string());
+        assert_eq!(to_ones_complement(25), "00011001".to_string());
+        assert_eq!(to_ones_complement(35), "00100011".to_string());
+        assert_eq!(to_ones_complement(7), "00000111".to_string());
     }
 
     #[test]
     fn ones_complement_negative() {
-        assert_eq!(to_ones_complement(-35), "1011100".to_string());
+        assert_eq!(to_ones_complement(-35), "10011100".to_string());
         assert_eq!(to_ones_complement(-90), "10100101".to_string());
-        assert_eq!(to_ones_complement(-22), "101001".to_string());
-        assert_eq!(to_ones_complement(-42), "1010101".to_string());
+        assert_eq!(to_ones_complement(-22), "10001001".to_string());
+        assert_eq!(to_ones_complement(-42), "10010101".to_string());
     }
 
     #[test]
-    fn twos_complement_positive() {
-        assert_eq!(to_twos_complement(25), "011001".to_string());
-        assert_eq!(to_twos_complement(129), "010000001".to_string());
-        assert_eq!(to_twos_complement(7), "0111".to_string());
+    fn to_twos_complement_positive() {
+        assert_eq!(to_twos_complement(25), "00011001".to_string());
+        assert_eq!(to_twos_complement(7), "00000111".to_string());
+        // assert_eq!(to_twos_complement(129), "010000001".to_string());
     }
 
     #[test]
     fn twos_complement_zero() {
-        assert_eq!(to_twos_complement(0), "0".to_string());
+        assert_eq!(to_twos_complement(0), "00000000".to_string());
     }
 
     #[test]
     fn twos_complement_negative() {
         assert_eq!(to_twos_complement(-90), "10100110".to_string());
-        assert_eq!(to_twos_complement(-2), "110".to_string());
-        assert_eq!(to_twos_complement(-32), "1100000".to_string());
+        assert_eq!(to_twos_complement(-2),  "10000010".to_string());
+        assert_eq!(to_twos_complement(-32), "10100000".to_string());
     }
 
     #[test]
     fn excess_64_positive() {
-        assert_eq!(to_excess(64, 35), Ok("1100011".to_string()));
+        assert_eq!(to_excess(64, 35), Ok("01100011".to_string()));
     }
 
     #[test]
     fn excess_64_zero() {
-        assert_eq!(to_excess(64, 0), Ok("1000000".to_string()));
+        assert_eq!(to_excess(64, 0), Ok("01000000".to_string()));
     }
 
     #[test]
     fn excess_64_negative() {
-        assert_eq!(to_excess(64, -22), Ok("0101010".to_string()));
-        assert_eq!(to_excess(64, -37), Ok("0011011".to_string()));
+        assert_eq!(to_excess(64, -22), Ok("00101010".to_string()));
+        assert_eq!(to_excess(64, -37), Ok("00011011".to_string()));
     }
 
     #[test]
