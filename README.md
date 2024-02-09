@@ -13,7 +13,7 @@ Run this project online [here](https://play.rust-lang.org/?version=stable&mode=d
 
 Click `Run` at the top of the page to run the program.
 
-> Link last updated: 9 February 2023 @ 17:48
+> Link last updated: 9 February 2023 @ 18:16
 
 ### Building manually
 
