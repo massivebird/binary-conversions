@@ -20,12 +20,13 @@ pub fn run(n: i128) {
     };
 
     println!("Evaluating decimal {n}...");
-    // println!("Unsigned:        {}", unsigned_bit_string(n));
-    println!("Ones complement:  {}", to_ones_complement(n));
-    println!("Twos complement:  {}", to_twos_complement(n));
-    // println!("Excess-32:      {}", excess_output(32, n));
-    // println!("Excess-64:      {}", excess_output(64, n));
-    println!("Excess-128:       {}", excess_output(128, n));
+    // println!("Unsigned:          {}", unsigned_bit_string(n));
+    println!("Signed magnitude:  {}", to_signed(n));
+    println!("Ones complement:   {}", to_ones_complement(n));
+    println!("Twos complement:   {}", to_twos_complement(n));
+    // println!("Excess-32:       {}", excess_output(32, n));
+    // println!("Excess-64:       {}", excess_output(64, n));
+    println!("Excess-128:        {}", excess_output(128, n));
 }
 
 pub fn run_to_binary() {
@@ -78,6 +79,16 @@ fn run_to_decimal() {
     println!("Excess-128:        {}", ok_value_or_err_msg(from_excess_128(&bit_string)));
 }
 
+/// Converts a decimal to its 8-bit signed binary form.
+fn to_signed(n: i128) -> String {
+    if !n.is_negative() { return pad(8, &to_unsigned_unpadded(n)) }
+
+    assert!(n < 2i128.pow(7) - 1);
+
+    format!("1{}", pad(7, &to_unsigned_unpadded(n)))
+}
+
+/// Converts a bit string in excess-128 form to its decimal value.
 fn from_excess_128(bit_string: &str) -> Result<i128, String> {
     let maximum_bits = 8;
     if bit_string.len() > maximum_bits {
@@ -96,6 +107,7 @@ fn pad(num_bits: usize, bit_string: &str) -> String {
     format!("{padding}{bit_string}")
 }
 
+/// Converts a bit string in signed form to its decimal value.
 fn from_signed(bit_string: &str) -> i128 {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     if sign_bit == '0' { return from_unsigned(bit_string) }
@@ -104,6 +116,7 @@ fn from_signed(bit_string: &str) -> i128 {
     -1 * from_unsigned(&magnitude)
 }
 
+/// Converts a bit string in twos complement form to its decimal value.
 fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     // positive -> unchanged from unsigned form
@@ -140,6 +153,7 @@ fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
     );
 }
 
+/// Converts a bit string in ones complement form to its decimal value.
 fn from_ones_complement(bit_string: &str) -> i128 {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     // positive -> unchanged from unsigned form
@@ -151,6 +165,7 @@ fn from_ones_complement(bit_string: &str) -> i128 {
     return -1 * from_unsigned(&flipped_magnitude);
 }
 
+/// Converts a bit string in unsigned form to its decimal value.
 fn from_unsigned(bit_string: &str) -> i128 {
     bit_string
         .chars()
@@ -183,6 +198,7 @@ pub fn main() {
     }
 }
 
+/// Converts a decimal to its 8-bit ones complement binary form.
 fn to_ones_complement(n: i128) -> String {
     let unsigned_bit_string: String = to_unsigned_unpadded(n);
 
@@ -196,10 +212,10 @@ fn to_ones_complement(n: i128) -> String {
 
     let flipped_magnitude: String = flip_bits(&unsigned_bit_string);
 
-    // format!("1{}", pad(7, &flipped_magnitude))
     format!("1{}", pad(7, &flipped_magnitude))
 }
 
+/// Converts a decimal to its 8-bit twos complement binary form.
 fn to_twos_complement(n: i128) -> String {
     if !n.is_negative() { return to_ones_complement(n) }
 
@@ -225,10 +241,11 @@ fn to_twos_complement(n: i128) -> String {
         })
         .collect::<String>();
 
-    // format!("1{}", pad(7, &ones_comp_plus_one))
     format!("1{ones_comp_plus_one}")
 }
 
+/// Converts a decimal to its 8-bit unsigned binary form, which is NOT
+/// padded to any number of bits.
 fn to_unsigned_unpadded(n: i128) -> String {
     let n = n.abs();
 
@@ -280,6 +297,7 @@ pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
     Ok(pad(8, &unpadded_bit_string))
 }
 
+/// Flips all bits in a bit string.
 fn flip_bits(bit_string: &str) -> String {
     bit_string.chars()
         .map(|c| {
@@ -308,6 +326,21 @@ mod tests {
     // fn unsigned_bit_string_positive() {
     //     assert_eq!(to_unsigned_unpadded(37), "00100101")
     // }
+
+    #[test]
+    fn to_signed_negative() {
+        assert_eq!(to_signed(-30), "10011110".to_string());
+    }
+
+    #[test]
+    fn to_signed_positive() {
+        assert_eq!(to_signed(30), "00011110".to_string());
+    }
+
+    #[test]
+    fn to_signed_zero() {
+        assert_eq!(to_signed(0), "00000000".to_string());
+    }
 
     #[test]
     fn ones_complement_zero() {

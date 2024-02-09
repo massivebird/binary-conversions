@@ -9,7 +9,9 @@ This command line application converts decimal values to and from the following 
 
 ## Building
 
-Run this project online [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021)!
+Run this project online [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=f35ef8a2b23292d85f571f7ee6c98034)!
+
+Click `Run` at the top of the page to run the program.
 
 > Link last updated: 9 February 2023 @ 17:48
 
