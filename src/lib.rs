@@ -22,7 +22,7 @@ pub fn run(n: i128) {
     println!("Evaluating decimal {n}...");
     // println!("Unsigned:        {}", unsigned_bit_string(n));
     println!("Ones complement:  {}", to_ones_complement(n));
-    println!("Ones complement:  {}", to_twos_complement(n));
+    println!("Twos complement:  {}", to_twos_complement(n));
     // println!("Excess-32:      {}", excess_output(32, n));
     // println!("Excess-64:      {}", excess_output(64, n));
     println!("Excess-128:       {}", excess_output(128, n));
@@ -47,8 +47,8 @@ pub fn run_to_binary() {
 
     println!("Evaluating decimal {n}...");
     println!("Unsigned:        {}", to_unsigned_unpadded(n));
-    println!("Twos complement: {}", to_ones_complement(n));
-    println!("Ones complement: {}", to_twos_complement(n));
+    println!("Ones complement: {}", to_ones_complement(n));
+    println!("Twos complement: {}", to_twos_complement(n));
     // println!("Excess-32:      {}", excess_output(32, n));
     // println!("Excess-64:      {}", excess_output(64, n));
     println!("Excess-128:      {}", excess_output(128, n));
