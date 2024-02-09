@@ -162,10 +162,9 @@ fn from_unsigned(bit_string: &str) -> i128 {
         })
 }
 
-/// A dummy, lightweight, non-`clap` main function.
-/// I have to demonstrate this code in class, but Rust Playground
-/// does not support command line arguments.
-/// This main function expects input via stdin.
+/// An interactive version of the program.
+/// Rust Playground does not support command line arguments, so
+/// an interactive mode is necessary.
 pub fn main() {
     println!("Converting (1) decimal to binary, or (2) binary to decimal?");
     let mode: i128 = loop {

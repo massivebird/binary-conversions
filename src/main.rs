@@ -8,16 +8,17 @@ fn main() -> std::io::Result<()> {
             .value_parser(clap::value_parser!(i128))
             .help("Specify the decimal number to convert")
         )
-        .arg(Arg::new("dummy")
-            .long("dummy")
+        .arg(Arg::new("interactive")
+            .short('i')
+            .long("interactive")
             .required(false)
             .conflicts_with("n")
             .action(clap::ArgAction::SetTrue)
-            .help("Run the dummy main")
+            .help("Run in interactive mode")
         )
         .get_matches();
 
-    if matches.get_flag("dummy") {
+    if matches.get_flag("interactive") {
         binary_conversions::main();
         return Ok(());
     }
