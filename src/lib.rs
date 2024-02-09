@@ -72,17 +72,31 @@ fn run_to_decimal() {
         }
     };
 
-    println!("Evaluating binary number {bit_string} as different notations...");
+    println!("Evaluating bit string {bit_string} as different notations...");
     println!("Unsigned:       {}", from_unsigned(&bit_string));
     println!("Signed:         {}", from_signed(&bit_string));
     println!("1's complement: {}", from_ones_complement(&bit_string));
     println!("2's complement: {}", ok_value_or_err_msg(from_twos_complement(&bit_string)));
+    println!("Excess-128:     {}", ok_value_or_err_msg(from_excess_128(&bit_string)));
+}
+
+fn from_excess_128(bit_string: &str) -> Result<i128, String> {
+    let maximum_bits = 8;
+    if bit_string.len() > maximum_bits {
+        return Err(format!("too many bits: maximum of {maximum_bits}"));
+    }
+
+    let padding = "0".repeat(maximum_bits - bit_string.len());
+    let bit_string = format!("{padding}{bit_string}");
+    Ok(from_unsigned(&bit_string) - 128)
 }
 
 fn from_signed(bit_string: &str) -> i128 {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     if sign_bit == '0' { return from_unsigned(bit_string) }
-    -1 * from_unsigned(&bit_string.chars().skip(1).collect::<String>())
+
+    let magnitude = &bit_string.chars().skip(1).collect::<String>();
+    -1 * from_unsigned(&magnitude)
 }
 
 fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
@@ -98,16 +112,13 @@ fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
         return Err("not enough bits".to_string())
     }
 
-    // 10010 -> 10001
-    // 10100 -> 10011
-    // 11111 -> 11110
     let Some(position_of_smallest_one) = magnitude.rfind('1') else {
-        // all ones -> one followed by all zeroes?
         // do I need to do this? should it be done? is it ethical?
         todo!();
     };
 
-    // flip the magnitude AFTER subtracting one
+    // flip the magnitude AFTER subtracting one, which is done by
+    // flipping the smallest 1 bit, then flipping all lesser value bits!
     let flipped_magnitude = flip_bits(&magnitude
         .chars()
         .enumerate()
@@ -129,8 +140,8 @@ fn from_ones_complement(bit_string: &str) -> i128 {
     // positive -> unchanged from unsigned form
     if sign_bit == '0' { return from_unsigned(bit_string) }
 
-    let magnitude_bits = bit_string.chars().skip(1).collect::<String>();
-    let flipped_magnitude = flip_bits(&magnitude_bits);
+    let magnitude = bit_string.chars().skip(1).collect::<String>();
+    let flipped_magnitude = flip_bits(&magnitude);
 
     return -1 * from_unsigned(&flipped_magnitude);
 }
@@ -179,9 +190,9 @@ fn to_ones_complement(n: i128) -> String {
         }
     }
 
-    let flipped_magnitudes: String = flip_bits(&unsigned_bit_string);
+    let flipped_magnitude: String = flip_bits(&unsigned_bit_string);
 
-    format!("1{flipped_magnitudes}")
+    format!("1{flipped_magnitude}")
 }
 
 fn to_twos_complement(n: i128) -> String {
@@ -189,9 +200,9 @@ fn to_twos_complement(n: i128) -> String {
     if !n.is_negative() { return to_ones_complement(n) }
 
     // gotta add 1 to 1c form
-    let magnitude_part = &to_ones_complement(n)[1..];
+    let magnitude = &to_ones_complement(n)[1..];
 
-    let Some(position_of_smallest_zero) = magnitude_part.rfind('0') else {
+    let Some(position_of_smallest_zero) = magnitude.rfind('0') else {
         // all ones -> one followed by all zeroes?
         // do I need to do this? should it be done? is it ethical?
         todo!();
@@ -202,7 +213,7 @@ fn to_twos_complement(n: i128) -> String {
     // (2) Flip that zero to a one (1), then
     // (3) Flip all ones to the right of that position.
     // I like the iterative approach.
-    String::from("1") + &magnitude_part
+    String::from("1") + &magnitude
         .chars()
         .enumerate()
         .map(|(i, value)| {
