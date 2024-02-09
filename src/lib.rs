@@ -3,8 +3,8 @@
 //! Submission Date: TBD
 //! Description:
 //!
-//! This project allows users to convert decimal to/from the following
-//! 8-bit binary notations:
+//! This project allows users to convert decimal values to and from the
+//! following 8-bit binary notations:
 //! 
 //! 1) Signed magnitude
 //! 2) One's complement
