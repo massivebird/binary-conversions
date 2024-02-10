@@ -36,8 +36,8 @@ pub fn run(n: i32) {
 pub fn main() {
     loop {
         println!("Choose a mode:");
-        println!("(1) Decimal to binary");
-        println!("(2) Binary to decimal");
+        println!("(1) Decimal to 8-bit binary");
+        println!("(2) 8-bit string to decimal");
         println!("(3) Quit");
         let mode: i32 = loop {
             let mut input = String::new();
