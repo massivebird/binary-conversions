@@ -36,8 +36,8 @@ pub fn run(n: i32) {
 pub fn main() {
     loop {
         println!("Choose a mode:");
-        println!("(1) Binary to decimal");
-        println!("(2) Decimal to binary");
+        println!("(1) Decimal to binary");
+        println!("(2) Binary to decimal");
         println!("(3) Quit");
         let mode: i32 = loop {
             let mut input = String::new();
@@ -121,12 +121,7 @@ fn interactive_to_decimal() {
 
 /// Converts a decimal to its 8-bit signed binary form.
 fn to_signed(n: i32) -> Result<String, String> {
-    let unsigned_max = 127;
-    if n.abs() > unsigned_max {
-        return Err(
-            format!("Too large for 8 bits: max is +-{unsigned_max}")
-        )
-    }
+    if let Err(msg) = validate_number(n, -127, 127) { return Err(msg) }
 
     if !n.is_negative() { return Ok(pad(8, &to_unsigned_unpadded(n))) }
 
@@ -179,20 +174,12 @@ fn to_ones_complement(n: i32) -> String {
         }
     }
 
-    let flipped_magnitude: String = flip_bits(&unsigned_bit_string[1..]);
-
-    // format!("1{}", pad(7, &flipped_magnitude))
-    dbg!((n, &unsigned_bit_string));
     flip_bits(&pad(8, &unsigned_bit_string))
 }
 
 /// Converts a decimal to its 8-bit twos complement binary form.
 fn to_twos_complement(n: i32) -> Result<String, String> {
-    if n < -128 || n > 127 {
-        return Err(
-            format!("Outside acceptable range")
-        )
-    }
+    if let Err(msg) = validate_number(n, -128, 127) { return Err(msg) }
 
     if !n.is_negative() { return Ok(to_ones_complement(n)) }
 
@@ -229,9 +216,7 @@ fn to_twos_complement(n: i32) -> Result<String, String> {
 ///
 /// Returns an error message detailing the incident.
 pub fn to_excess(e: i32, n: i32) -> Result<String, String> {
-    if n.abs() > e - 1 {
-        return Err(format!("input {n} too large for Excess-{e}"))
-    }
+    if let Err(msg) = validate_number(n, -128, 255) { return Err(msg) }
 
     let unpadded_bit_string = to_unsigned_unpadded(n + e);
 
@@ -254,16 +239,16 @@ fn from_unsigned(bit_string: &str) -> i32 {
 
 /// Converts a bit string in signed form to its decimal value.
 fn from_signed(bit_string: &str) -> i32 {
-    let sign_bit = bit_string.chars().nth(0).unwrap();
+    let sign_bit = bit_string.chars().next().unwrap();
     if sign_bit == '0' { return from_unsigned(bit_string) }
 
     let magnitude = &bit_string.chars().skip(1).collect::<String>();
-    -1 * from_unsigned(&magnitude)
+    -from_unsigned(&magnitude)
 }
 
 /// Converts a bit string in ones complement form to its decimal value.
 fn from_ones_complement(bit_string: &str) -> i32 {
-    let sign_bit = bit_string.chars().nth(0).unwrap();
+    let sign_bit = bit_string.chars().next().unwrap();
     // positive -> unchanged from unsigned form
     if sign_bit == '0' { return from_unsigned(bit_string) }
 
@@ -271,12 +256,12 @@ fn from_ones_complement(bit_string: &str) -> i32 {
     // let magnitude = bit_string.chars().skip(1).collect::<String>();
     let flipped_magnitude = flip_bits(&bit_string);
 
-    return -1 * from_unsigned(&flipped_magnitude);
+    -from_unsigned(&flipped_magnitude)
 }
 
 /// Converts a bit string in twos complement form to its decimal value.
 fn from_twos_complement(bit_string: &str) -> Result<i32, String> {
-    let sign_bit = bit_string.chars().nth(0).unwrap();
+    let sign_bit = bit_string.chars().next().unwrap();
     // positive -> unchanged from unsigned form
     if sign_bit == '0' { return Ok(from_unsigned(bit_string)) }
 
@@ -296,12 +281,14 @@ fn from_twos_complement(bit_string: &str) -> Result<i32, String> {
             .collect::<String>()
         )
     } else {
-        bit_string.to_string()
+        // the ONLY case in which there is a negative number with no
+        // `1` bits in the magnitude is -128.
+        return Ok(-128);
     };
 
-    return Ok(
-        -1 * from_unsigned(&flipped_magnitude)
-    );
+    Ok(
+        -from_unsigned(&flipped_magnitude)
+    )
 }
 
 /// Converts a bit string in excess-128 form to its decimal value.
@@ -311,7 +298,7 @@ fn from_excess_128(bit_string: &str) -> Result<i32, String> {
         return Err(format!("too many bits: maximum of {maximum_bits}"));
     }
 
-    Ok(from_unsigned(&bit_string) - 128)
+    Ok(from_unsigned(bit_string) - 128)
 }
 
 /// Flips all bits in a bit string.
@@ -330,6 +317,22 @@ fn pad(num_bits: usize, bit_string: &str) -> String {
     if num_bits < bit_string.len() { return bit_string.to_string() };
     let padding = "0".repeat(num_bits - bit_string.len());
     format!("{padding}{bit_string}")
+}
+
+/// Verifies that a number is within the inclusive range `min..=max`.
+///
+/// # Errors
+///
+/// Throws an error if the number is not within the inclusive range.
+///
+/// Returns an informative error message.
+fn validate_number(n: i32, min: i32, max: i32) -> Result<(), String> {
+    if !(min..=max).contains(&n) {
+        return Err(
+            format!("outside acceptable range: min = {min}, max = {max}")
+        )
+    }
+    Ok(())
 }
 
 #[cfg(test)]
