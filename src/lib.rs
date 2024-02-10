@@ -12,7 +12,7 @@
 //! 4) Excess-128
 
 /// Non-interactive run. Can be omitted from Rust Playground.
-pub fn run(n: i128) {
+pub fn run(n: i32) {
     let excess_output = |e, n| {
         match to_excess(e, n) {
             Ok(bit_string) => bit_string,
@@ -35,10 +35,10 @@ pub fn run(n: i128) {
 /// an interactive mode is necessary.
 pub fn main() {
     println!("Converting (1) decimal to binary, or (2) binary to decimal?");
-    let mode: i128 = loop {
+    let mode: i32 = loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
-        if let Ok(n) = input.trim().parse::<i128>() {
+        if let Ok(n) = input.trim().parse::<i32>() {
             if n != 1 && n != 2 { continue }
             break n;
         }
@@ -53,10 +53,10 @@ pub fn main() {
 
 pub fn interactive_to_binary() {
     println!("Enter a number to convert to binary:");
-    let n: i128 = loop {
+    let n: i32 = loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
-        if let Ok(n) = input.trim().parse::<i128>() {
+        if let Ok(n) = input.trim().parse::<i32>() {
             break n;
         }
     };
@@ -94,7 +94,7 @@ fn interactive_to_decimal() {
         break input.trim().to_string();
     };
 
-    let unpack = |r: Result<i128, String>| {
+    let unpack = |r: Result<i32, String>| {
         match r {
             Ok(a) => a.to_string(),
             Err(msg) => msg,
@@ -110,7 +110,7 @@ fn interactive_to_decimal() {
 }
 
 /// Converts a decimal to its 8-bit signed binary form.
-fn to_signed(n: i128) -> Result<String, String> {
+fn to_signed(n: i32) -> Result<String, String> {
     let unsigned_max = 127;
     if n.abs() > unsigned_max {
         return Err(
@@ -125,7 +125,7 @@ fn to_signed(n: i128) -> Result<String, String> {
 
 /// Converts a decimal to its 8-bit unsigned binary form, which is NOT
 /// padded to any number of bits.
-fn to_unsigned_unpadded(n: i128) -> String {
+fn to_unsigned_unpadded(n: i32) -> String {
     let n = n.abs();
 
     if n == 0 { return "0".to_string(); }
@@ -134,7 +134,7 @@ fn to_unsigned_unpadded(n: i128) -> String {
     let num_bits = {
         let mut i: u32 = 0;
         loop {
-            if 2i128.pow(i) > n { break i };
+            if 2i32.pow(i) > n { break i };
             i += 1;
         }
     };
@@ -144,7 +144,7 @@ fn to_unsigned_unpadded(n: i128) -> String {
 
         let mut remaining_value = n;
 
-        for place_value in (0..num_bits).rev().map(|v| 2i128.pow(v)) {
+        for place_value in (0..num_bits).rev().map(|v| 2i32.pow(v)) {
             if place_value <= remaining_value {
                 working_bit_string.push('1');
                 remaining_value -= place_value;
@@ -158,7 +158,7 @@ fn to_unsigned_unpadded(n: i128) -> String {
 }
 
 /// Converts a decimal to its 8-bit ones complement binary form.
-fn to_ones_complement(n: i128) -> String {
+fn to_ones_complement(n: i32) -> String {
     let unsigned_bit_string: String = to_unsigned_unpadded(n);
 
     if !n.is_negative() {
@@ -175,7 +175,7 @@ fn to_ones_complement(n: i128) -> String {
 }
 
 /// Converts a decimal to its 8-bit twos complement binary form.
-fn to_twos_complement(n: i128) -> Result<String, String> {
+fn to_twos_complement(n: i32) -> Result<String, String> {
     if n < -128 || n > 127 {
         return Err(
             format!("Outside acceptable range")
@@ -216,32 +216,32 @@ fn to_twos_complement(n: i128) -> Result<String, String> {
 /// Throws an error if the value `n` is too large for Excess-`e` notation.
 ///
 /// Returns an error message detailing the incident.
-pub fn to_excess(e: i128, n: i128) -> Result<String, String> {
+pub fn to_excess(e: i32, n: i32) -> Result<String, String> {
     if n.abs() > e - 1 {
         return Err(format!("input {n} too large for Excess-{e}"))
     }
 
     let unpadded_bit_string = to_unsigned_unpadded(n + e);
 
-    // let total_bits = i128::ilog2(e) as usize + 1;
+    // let total_bits = i32::ilog2(e) as usize + 1;
 
     Ok(pad(8, &unpadded_bit_string))
 }
 
 /// Converts a bit string in unsigned form to its decimal value.
-fn from_unsigned(bit_string: &str) -> i128 {
+fn from_unsigned(bit_string: &str) -> i32 {
     bit_string
         .chars()
         .rev()
         .enumerate()
         .fold(0, |acc, (index, char)| {
             if char == '0' { return acc; }
-            acc + 2i128.pow(index as u32)
+            acc + 2i32.pow(index as u32)
         })
 }
 
 /// Converts a bit string in signed form to its decimal value.
-fn from_signed(bit_string: &str) -> i128 {
+fn from_signed(bit_string: &str) -> i32 {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     if sign_bit == '0' { return from_unsigned(bit_string) }
 
@@ -250,7 +250,7 @@ fn from_signed(bit_string: &str) -> i128 {
 }
 
 /// Converts a bit string in ones complement form to its decimal value.
-fn from_ones_complement(bit_string: &str) -> i128 {
+fn from_ones_complement(bit_string: &str) -> i32 {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     // positive -> unchanged from unsigned form
     if sign_bit == '0' { return from_unsigned(bit_string) }
@@ -263,7 +263,7 @@ fn from_ones_complement(bit_string: &str) -> i128 {
 }
 
 /// Converts a bit string in twos complement form to its decimal value.
-fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
+fn from_twos_complement(bit_string: &str) -> Result<i32, String> {
     let sign_bit = bit_string.chars().nth(0).unwrap();
     // positive -> unchanged from unsigned form
     if sign_bit == '0' { return Ok(from_unsigned(bit_string)) }
@@ -293,7 +293,7 @@ fn from_twos_complement(bit_string: &str) -> Result<i128, String> {
 }
 
 /// Converts a bit string in excess-128 form to its decimal value.
-fn from_excess_128(bit_string: &str) -> Result<i128, String> {
+fn from_excess_128(bit_string: &str) -> Result<i32, String> {
     let maximum_bits = 8;
     if bit_string.len() > maximum_bits {
         return Err(format!("too many bits: maximum of {maximum_bits}"));
