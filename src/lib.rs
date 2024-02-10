@@ -1,33 +1,37 @@
-//! Author: Garrett Drake
-//! Project: Signed Integer Representation
-//! Submission Date: TBD
-//! Description:
-//!
-//! This project allows users to convert decimal values to and from the
-//! following 8-bit binary notations:
-//! 
-//! 1) Signed magnitude
-//! 2) One's complement
-//! 3) Two's complement
-//! 4) Excess-128
+// Author: Garrett Drake
+// Project: Signed Integer Representation
+// Submission Date: TBD
+// Description:
+//
+// This project allows users to convert decimal values to and from the
+// following 8-bit binary notations:
+// 
+// 1) Signed magnitude
+// 2) One's complement
+// 3) Two's complement
+// 4) Excess-128
+
+/// Returns a string of the value contained within a `Result<T, E>` type,
+/// whether `Ok` or `Err`.
+macro_rules! unpack {
+    ( $x: expr ) => {
+        match $x {
+        Ok(a)  => a.to_string(),
+        Err(b) => b.to_string(),
+        }
+    }
+}
 
 /// Non-interactive run. Can be omitted from Rust Playground.
 pub fn run(n: i32) {
-    let excess_output = |e, n| {
-        match to_excess(e, n) {
-            Ok(bit_string) => bit_string,
-            Err(msg) => msg
-        }
-    };
-
     println!("Evaluating decimal {n}...");
     // println!("Unsigned:          {}", unsigned_bit_string(n));
-    // println!("Signed magnitude:  {}", to_signed(n));
+    println!("Signed magnitude:  {}", unpack!(to_signed(n)));
     println!("Ones complement:   {}", to_ones_complement(n));
-    // println!("Twos complement:   {}", to_twos_complement(n));
-    // println!("Excess-32:       {}", excess_output(32, n));
-    // println!("Excess-64:       {}", excess_output(64, n));
-    println!("Excess-128:        {}", excess_output(128, n));
+    println!("Twos complement:   {}", unpack!(to_twos_complement(n)));
+    println!("Excess-32:         {}", unpack!(to_excess(32, n)));
+    println!("Excess-64:         {}", unpack!(to_excess(64, n)));
+    println!("Excess-128:        {}", unpack!(to_excess(128, n)));
 }
 
 /// An interactive version of the program.
@@ -46,7 +50,7 @@ pub fn main() {
                 if n != 1 && n != 2 && n != 3 { continue }
                 break n;
             }
-            println!("Please enter a valid mode.")
+            println!("Please enter a valid mode.");
         };
 
         match mode {
@@ -70,31 +74,14 @@ pub fn interactive_to_binary() {
         if let Ok(n) = input.trim().parse::<i32>() {
             if (-128..=127).contains(&n) { break n }
         }
-        println!("Please enter a valid integer. (min -128, max 127)")
-    };
-
-    let excess_output = |e, n| {
-        match to_excess(e, n) {
-            Ok(bit_string) => bit_string,
-            Err(msg) => msg
-        }
-    };
-
-    let unpack = |r: Result<String, String>| {
-        match r {
-            Ok(a) => a,
-            Err(msg) => msg,
-        }
+        println!("Please enter a valid integer. (min -128, max 127)");
     };
 
     println!("Evaluating decimal {n}...");
-    // println!("Unsigned:         {}", to_unsigned_unpadded(n));
-    println!("Signed magnitude: {}", pad(8, &unpack(to_signed(n))));
+    println!("Signed magnitude: {}", pad(8, &unpack!(to_signed(n))));
     println!("Ones complement:  {}", to_ones_complement(n));
-    println!("Twos complement:  {}", unpack(to_twos_complement(n)));
-    // println!("Excess-32:      {}", excess_output(32, n));
-    // println!("Excess-64:      {}", excess_output(64, n));
-    println!("Excess-128:       {}", excess_output(128, n));
+    println!("Twos complement:  {}", unpack!(to_twos_complement(n)));
+    println!("Excess-128:       {}", unpack!(to_excess(128, n)));
 }
 
 fn interactive_to_decimal() {
@@ -112,27 +99,19 @@ fn interactive_to_decimal() {
             break input.trim().to_string();
         };
 
-        println!("Please enter a valid 8-bit bit string.")
-    };
-
-    let unpack = |r: Result<i32, String>| {
-        match r {
-            Ok(a) => a.to_string(),
-            Err(msg) => msg,
-        }
+        println!("Please enter a valid 8-bit bit string.");
     };
 
     println!("Evaluating bit string {bit_string} as different notations...");
-    // println!("Unsigned:         {}", from_unsigned(&bit_string));
     println!("Signed magnitude: {}", from_signed(&bit_string));
     println!("Ones complement:  {}", from_ones_complement(&bit_string));
-    println!("Twos complement:  {}", unpack(from_twos_complement(&bit_string)));
-    println!("Excess-128:       {}", unpack(from_excess_128(&bit_string)));
+    println!("Twos complement:  {}", unpack!(from_twos_complement(&bit_string)));
+    println!("Excess-128:       {}", unpack!(from_excess_128(&bit_string)));
 }
 
 /// Converts a decimal to its 8-bit signed binary form.
 fn to_signed(n: i32) -> Result<String, String> {
-    if let Err(msg) = validate_number(n, -127, 127) { return Err(msg) }
+    validate_number(n, -127, 127)?;
 
     if !n.is_negative() { return Ok(pad(8, &to_unsigned_unpadded(n))) }
 
@@ -190,15 +169,15 @@ fn to_ones_complement(n: i32) -> String {
 
 /// Converts a decimal to its 8-bit twos complement binary form.
 fn to_twos_complement(n: i32) -> Result<String, String> {
-    if let Err(msg) = validate_number(n, -128, 127) { return Err(msg) }
+    validate_number(n, -128, 127)?;
 
     if !n.is_negative() { return Ok(to_ones_complement(n)) }
 
     let magnitude = &to_ones_complement(n)[1..];
 
     let Some(position_of_smallest_zero) = magnitude.rfind('0') else {
-        // the ONLY case in which there is a negative number with no
-        // `1` bits in the magnitude is -128.
+        // -128 is the ONLY case in which there is a negative number with no
+        // `1` bits in the padded-unsigned magnitude
         return Ok(String::from("10000000"))
     };
 
@@ -227,7 +206,7 @@ fn to_twos_complement(n: i32) -> Result<String, String> {
 ///
 /// Returns an error message detailing the incident.
 pub fn to_excess(e: i32, n: i32) -> Result<String, String> {
-    if let Err(msg) = validate_number(n, -128, 255) { return Err(msg) }
+    validate_number(n, -128, 255)?;
 
     let unpadded_bit_string = to_unsigned_unpadded(n + e);
 
@@ -244,7 +223,7 @@ fn from_unsigned(bit_string: &str) -> i32 {
         .enumerate()
         .fold(0, |acc, (index, char)| {
             if char == '0' { return acc; }
-            acc + 2i32.pow(index as u32)
+            acc + 2i32.pow(u32::try_from(index).unwrap())
         })
 }
 
@@ -254,7 +233,7 @@ fn from_signed(bit_string: &str) -> i32 {
     if sign_bit == '0' { return from_unsigned(bit_string) }
 
     let magnitude = &bit_string.chars().skip(1).collect::<String>();
-    -from_unsigned(&magnitude)
+    -from_unsigned(magnitude)
 }
 
 /// Converts a bit string in ones complement form to its decimal value.
@@ -264,10 +243,9 @@ fn from_ones_complement(bit_string: &str) -> i32 {
     if sign_bit == '0' { return from_unsigned(bit_string) }
 
     // we can just flip the entire bit string...??
-    // let magnitude = bit_string.chars().skip(1).collect::<String>();
-    let flipped_magnitude = flip_bits(&bit_string);
+    let flipped = flip_bits(bit_string);
 
-    -from_unsigned(&flipped_magnitude)
+    -from_unsigned(&flipped)
 }
 
 /// Converts a bit string in twos complement form to its decimal value.
@@ -278,24 +256,23 @@ fn from_twos_complement(bit_string: &str) -> Result<i32, String> {
 
     let magnitude = bit_string.chars().skip(1).collect::<String>();
 
-    let flipped_magnitude =
-    if let Some(position_of_smallest_one) = magnitude.rfind('1') {
-        // subtract one from the bit string
-        flip_bits(&magnitude
-            .chars()
-            .enumerate()
-            .map(|(i, value)| {
-                if i == position_of_smallest_one { return '0' }
-                if i > position_of_smallest_one  { return '1' }
-                value
-            })
-            .collect::<String>()
-        )
-    } else {
-        // the ONLY case in which there is a negative number with no
-        // `1` bits in the magnitude is -128.
+    let Some(position_of_smallest_one) = magnitude.rfind('1') else {
+        // -128 is the ONLY case in which there is a negative number with no
+        // `1` bits in the unsigned magnitude
         return Ok(-128);
     };
+
+    // subtract one from the bit string, then flip bits
+    let flipped_magnitude = flip_bits(&magnitude
+        .chars()
+        .enumerate()
+        .map(|(i, value)| {
+            if i == position_of_smallest_one { return '0' }
+            if i > position_of_smallest_one  { return '1' }
+            value
+        })
+        .collect::<String>()
+    );
 
     Ok(
         -from_unsigned(&flipped_magnitude)
