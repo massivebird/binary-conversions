@@ -347,7 +347,7 @@ fn validate_number(n: i32, min: i32, max: i32) -> Result<(), String> {
 }
 
 #[cfg(test)]
-// 1's comp: https://www.compscilib.com/calculate/decimal-to-ones-complement
+// 2s comp: https://www.exploringbinary.com/twos-complement-converter/
 mod tests {
     use super::*;
 
