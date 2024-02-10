@@ -34,21 +34,31 @@ pub fn run(n: i32) {
 /// Rust Playground does not support command line arguments, so
 /// an interactive mode is necessary.
 pub fn main() {
-    println!("Converting (1) decimal to binary, or (2) binary to decimal?");
-    let mode: i32 = loop {
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input).unwrap();
-        if let Ok(n) = input.trim().parse::<i32>() {
-            if n != 1 && n != 2 { continue }
-            break n;
-        }
-    };
+    loop {
+        println!("Choose a mode:");
+        println!("(1) Binary to decimal");
+        println!("(2) Decimal to binary");
+        println!("(3) Quit");
+        let mode: i32 = loop {
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).unwrap();
+            if let Ok(n) = input.trim().parse::<i32>() {
+                if n != 1 && n != 2 && n != 3 { continue }
+                break n;
+            }
+        };
 
-    match mode {
-        1 => interactive_to_binary(),
-        2 => interactive_to_decimal(),
-        _ => unreachable!(),
+        match mode {
+            1 => interactive_to_binary(),
+            2 => interactive_to_decimal(),
+            3 => break,
+            _ => unreachable!(),
+        }
+
+        println!();
     }
+
+    println!("Goodbye!");
 }
 
 pub fn interactive_to_binary() {
