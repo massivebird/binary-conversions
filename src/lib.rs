@@ -46,6 +46,7 @@ pub fn main() {
                 if n != 1 && n != 2 && n != 3 { continue }
                 break n;
             }
+            println!("Please enter a valid mode.")
         };
 
         match mode {
@@ -62,13 +63,14 @@ pub fn main() {
 }
 
 pub fn interactive_to_binary() {
-    println!("Enter a number to convert to binary:");
+    println!("Enter a decimal number to convert to binary:");
     let n: i32 = loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
         if let Ok(n) = input.trim().parse::<i32>() {
-            break n;
+            if (-128..=127).contains(&n) { break n }
         }
+        println!("Please enter a valid integer. (min -128, max 127)")
     };
 
     let excess_output = |e, n| {
@@ -97,11 +99,20 @@ pub fn interactive_to_binary() {
 
 fn interactive_to_decimal() {
     println!("Enter a bit string to convert to decimal:");
+
+    let is_valid_8_bit_binary_string = |s: &str| -> bool {
+        s.trim().chars().all(|c| c == '1' || c == '0') && s.trim().len() == 8
+    };
+
     let bit_string: String = loop {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
-        if !input.trim().chars().all(|c| c == '1' || c == '0') { continue };
-        break input.trim().to_string();
+
+        if is_valid_8_bit_binary_string(&input) {
+            break input.trim().to_string();
+        };
+
+        println!("Please enter a valid 8-bit bit string.")
     };
 
     let unpack = |r: Result<i32, String>| {
