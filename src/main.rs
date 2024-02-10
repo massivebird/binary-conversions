@@ -5,7 +5,7 @@ fn main() -> std::io::Result<()> {
         .arg(Arg::new("n")
             .required(true)
             .value_name("NUM")
-            .value_parser(clap::value_parser!(i128))
+            .value_parser(clap::value_parser!(i32))
             .help("Specify the decimal number to convert")
         )
         .arg(Arg::new("interactive")
@@ -23,7 +23,7 @@ fn main() -> std::io::Result<()> {
         return Ok(());
     }
 
-    let n: i128 = *matches.get_one("n").unwrap();
+    let n = *matches.get_one("n").unwrap();
 
     binary_conversions::run(n);
 
