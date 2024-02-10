@@ -24,7 +24,7 @@ pub fn run(n: i128) {
     // println!("Unsigned:          {}", unsigned_bit_string(n));
     // println!("Signed magnitude:  {}", to_signed(n));
     println!("Ones complement:   {}", to_ones_complement(n));
-    println!("Twos complement:   {}", to_twos_complement(n));
+    // println!("Twos complement:   {}", to_twos_complement(n));
     // println!("Excess-32:       {}", excess_output(32, n));
     // println!("Excess-64:       {}", excess_output(64, n));
     println!("Excess-128:        {}", excess_output(128, n));
@@ -79,7 +79,7 @@ pub fn interactive_to_binary() {
     // println!("Unsigned:         {}", to_unsigned_unpadded(n));
     println!("Signed magnitude: {}", pad(8, &unpack(to_signed(n))));
     println!("Ones complement:  {}", to_ones_complement(n));
-    println!("Twos complement:  {}", to_twos_complement(n));
+    println!("Twos complement:  {}", unpack(to_twos_complement(n)));
     // println!("Excess-32:      {}", excess_output(32, n));
     // println!("Excess-64:      {}", excess_output(64, n));
     println!("Excess-128:       {}", excess_output(128, n));
@@ -175,15 +175,21 @@ fn to_ones_complement(n: i128) -> String {
 }
 
 /// Converts a decimal to its 8-bit twos complement binary form.
-fn to_twos_complement(n: i128) -> String {
-    if !n.is_negative() { return to_ones_complement(n) }
+fn to_twos_complement(n: i128) -> Result<String, String> {
+    if n < -128 || n > 127 {
+        return Err(
+            format!("Outside acceptable range")
+        )
+    }
+
+    if !n.is_negative() { return Ok(to_ones_complement(n)) }
 
     let magnitude = &to_ones_complement(n)[1..];
 
     let Some(position_of_smallest_zero) = magnitude.rfind('0') else {
-        // all ones -> one followed by all zeroes?
-        // do I need to do this? should it be done? is it ethical?
-        todo!();
+        // the ONLY case in which there is a negative number with no
+        // `1` bits in the magnitude is -128.
+        return Ok(String::from("10000000"))
     };
 
     // adding 1 to a bit string goes like this:
@@ -200,7 +206,7 @@ fn to_twos_complement(n: i128) -> String {
         })
         .collect::<String>();
 
-    format!("1{ones_comp_plus_one}")
+    Ok(format!("1{ones_comp_plus_one}"))
 }
 
 /// Converts a value `n` to excess `e`.
@@ -336,17 +342,17 @@ mod tests {
 
     #[test]
     fn to_signed_negative() {
-        assert_eq!(to_signed(-30), "10011110".to_string());
+        assert_eq!(to_signed(-30), Ok("10011110".to_string()));
     }
 
     #[test]
     fn to_signed_positive() {
-        assert_eq!(to_signed(30), "00011110".to_string());
+        assert_eq!(to_signed(30), Ok("00011110".to_string()));
     }
 
     #[test]
     fn to_signed_zero() {
-        assert_eq!(to_signed(0), "00000000".to_string());
+        assert_eq!(to_signed(0), Ok("00000000".to_string()));
     }
 
     #[test]
@@ -373,25 +379,25 @@ mod tests {
 
     #[test]
     fn to_twos_complement_positive() {
-        assert_eq!(to_twos_complement(127), "01111111".to_string());
-        assert_eq!(to_twos_complement(126), "01111110".to_string());
-        assert_eq!(to_twos_complement(25),  "00011001".to_string());
-        assert_eq!(to_twos_complement(7),   "00000111".to_string());
+        assert_eq!(to_twos_complement(127), Ok("01111111".to_string()));
+        assert_eq!(to_twos_complement(126), Ok("01111110".to_string()));
+        assert_eq!(to_twos_complement(25),  Ok("00011001".to_string()));
+        assert_eq!(to_twos_complement(7),   Ok("00000111".to_string()));
         // assert_eq!(to_twos_complement(129), "010000001".to_string());
     }
 
     #[test]
     fn to_twos_complement_zero() {
-        assert_eq!(to_twos_complement(0), "00000000".to_string());
+        assert_eq!(to_twos_complement(0), Ok("00000000".to_string()));
     }
 
     #[test]
     fn to_twos_complement_negative() {
-        assert_eq!(to_twos_complement(-90),  "10100110".to_string());
-        assert_eq!(to_twos_complement(-2),   "10000010".to_string());
-        assert_eq!(to_twos_complement(-32),  "10100000".to_string());
-        assert_eq!(to_twos_complement(-128), "10000000".to_string());
-        assert_eq!(to_twos_complement(-127), "10000001".to_string());
+        assert_eq!(to_twos_complement(-90),  Ok("10100110".to_string()));
+        assert_eq!(to_twos_complement(-2),   Ok("10000010".to_string()));
+        assert_eq!(to_twos_complement(-32),  Ok("10100000".to_string()));
+        assert_eq!(to_twos_complement(-128), Ok("10000000".to_string()));
+        assert_eq!(to_twos_complement(-127), Ok("10000001".to_string()));
     }
 
     #[test]
