@@ -181,7 +181,9 @@ fn to_ones_complement(n: i32) -> String {
 
     let flipped_magnitude: String = flip_bits(&unsigned_bit_string[1..]);
 
-    format!("1{}", pad(7, &flipped_magnitude))
+    // format!("1{}", pad(7, &flipped_magnitude))
+    dbg!((n, &unsigned_bit_string));
+    flip_bits(&pad(8, &unsigned_bit_string))
 }
 
 /// Converts a decimal to its 8-bit twos complement binary form.
@@ -335,21 +337,6 @@ fn pad(num_bits: usize, bit_string: &str) -> String {
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn unsigned_bit_string_zero() {
-    //     assert_eq!(to_unsigned_unpadded(0), "00000000")
-    // }
-
-    // #[test]
-    // fn unsigned_bit_string_negative() {
-    //     assert_eq!(to_unsigned_unpadded(-90), "01011010")
-    // }
-
-    // #[test]
-    // fn unsigned_bit_string_positive() {
-    //     assert_eq!(to_unsigned_unpadded(37), "00100101")
-    // }
-
     #[test]
     fn to_signed_negative() {
         assert_eq!(to_signed(-30), Ok("10011110".to_string()));
@@ -372,28 +359,28 @@ mod tests {
 
     #[test]
     fn to_ones_complement_positive() {
+        assert_eq!(to_ones_complement(7),   "00000111".to_string());
         assert_eq!(to_ones_complement(25),  "00011001".to_string());
         assert_eq!(to_ones_complement(35),  "00100011".to_string());
-        assert_eq!(to_ones_complement(7),   "00000111".to_string());
         assert_eq!(to_ones_complement(127), "01111111".to_string());
     }
 
     #[test]
     fn to_ones_complement_negative() {
-        assert_eq!(to_ones_complement(-35),  "10011100".to_string());
+        assert_eq!(to_ones_complement(-35),  "11011100".to_string());
         assert_eq!(to_ones_complement(-90),  "10100101".to_string());
-        assert_eq!(to_ones_complement(-22),  "10001001".to_string());
-        assert_eq!(to_ones_complement(-42),  "10010101".to_string());
+        assert_eq!(to_ones_complement(-22),  "11101001".to_string());
+        assert_eq!(to_ones_complement(-32),  "11011111".to_string());
+        assert_eq!(to_ones_complement(-42),  "11010101".to_string());
         assert_eq!(to_ones_complement(-127), "10000000".to_string());
     }
 
     #[test]
     fn to_twos_complement_positive() {
-        assert_eq!(to_twos_complement(127), Ok("01111111".to_string()));
-        assert_eq!(to_twos_complement(126), Ok("01111110".to_string()));
-        assert_eq!(to_twos_complement(25),  Ok("00011001".to_string()));
         assert_eq!(to_twos_complement(7),   Ok("00000111".to_string()));
-        // assert_eq!(to_twos_complement(129), "010000001".to_string());
+        assert_eq!(to_twos_complement(25),  Ok("00011001".to_string()));
+        assert_eq!(to_twos_complement(126), Ok("01111110".to_string()));
+        assert_eq!(to_twos_complement(127), Ok("01111111".to_string()));
     }
 
     #[test]
@@ -403,9 +390,10 @@ mod tests {
 
     #[test]
     fn to_twos_complement_negative() {
+        assert_eq!(to_twos_complement(-2),   Ok("11111110".to_string()));
+        assert_eq!(to_twos_complement(-32),  Ok("11100000".to_string()));
+        assert_eq!(to_twos_complement(-42),  Ok("11010110".to_string()));
         assert_eq!(to_twos_complement(-90),  Ok("10100110".to_string()));
-        assert_eq!(to_twos_complement(-2),   Ok("10000010".to_string()));
-        assert_eq!(to_twos_complement(-32),  Ok("10100000".to_string()));
         assert_eq!(to_twos_complement(-128), Ok("10000000".to_string()));
         assert_eq!(to_twos_complement(-127), Ok("10000001".to_string()));
     }
