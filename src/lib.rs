@@ -20,8 +20,8 @@ pub fn run(n: i32) {
     println!("Signed magnitude:  {}", unpack(to_signed(n)));
     println!("Ones complement:   {}", unpack(to_ones_complement(n)));
     println!("Twos complement:   {}", unpack(to_twos_complement(n)));
-    println!("Excess-32:         {}", unpack(to_excess(32, n)));
-    println!("Excess-64:         {}", unpack(to_excess(64, n)));
+    // println!("Excess-32:         {}", unpack(to_excess(32, n)));
+    // println!("Excess-64:         {}", unpack(to_excess(64, n)));
     println!("Excess-128:        {}", unpack(to_excess(128, n)));
 }
 
