@@ -11,14 +11,14 @@
 // 3) Two's complement
 // 4) Excess-128
 
+use std::fmt::Display;
+
 /// Returns a string of the value contained within a `Result<T, E>` type,
 /// whether `Ok` or `Err`.
-macro_rules! unpack {
-    ( $x: expr ) => {
-        match $x {
-        Ok(a)  => a.to_string(),
-        Err(b) => b.to_string(),
-        }
+fn unpack<T: Display, E: Display>(r: Result<T, E>) -> String {
+    match r {
+        Ok(value) => value.to_string(),
+        Err(msg) => msg.to_string(),
     }
 }
 
@@ -26,12 +26,12 @@ macro_rules! unpack {
 pub fn run(n: i32) {
     println!("Evaluating decimal {n}...");
     // println!("Unsigned:          {}", unsigned_bit_string(n));
-    println!("Signed magnitude:  {}", unpack!(to_signed(n)));
-    println!("Ones complement:   {}", unpack!(to_ones_complement(n)));
-    println!("Twos complement:   {}", unpack!(to_twos_complement(n)));
-    println!("Excess-32:         {}", unpack!(to_excess(32, n)));
-    println!("Excess-64:         {}", unpack!(to_excess(64, n)));
-    println!("Excess-128:        {}", unpack!(to_excess(128, n)));
+    println!("Signed magnitude:  {}", unpack(to_signed(n)));
+    println!("Ones complement:   {}", unpack(to_ones_complement(n)));
+    println!("Twos complement:   {}", unpack(to_twos_complement(n)));
+    println!("Excess-32:         {}", unpack(to_excess(32, n)));
+    println!("Excess-64:         {}", unpack(to_excess(64, n)));
+    println!("Excess-128:        {}", unpack(to_excess(128, n)));
 }
 
 /// An interactive version of the program.
@@ -78,10 +78,10 @@ pub fn interactive_to_binary() {
     };
 
     println!("Evaluating decimal {n}...");
-    println!("Signed magnitude: {}", pad(8, &unpack!(to_signed(n))));
-    println!("Ones complement:  {}", unpack!(to_ones_complement(n)));
-    println!("Twos complement:  {}", unpack!(to_twos_complement(n)));
-    println!("Excess-128:       {}", unpack!(to_excess(128, n)));
+    println!("Signed magnitude: {}", pad(8, &unpack(to_signed(n))));
+    println!("Ones complement:  {}", unpack(to_ones_complement(n)));
+    println!("Twos complement:  {}", unpack(to_twos_complement(n)));
+    println!("Excess-128:       {}", unpack(to_excess(128, n)));
 }
 
 fn interactive_to_decimal() {
@@ -105,8 +105,8 @@ fn interactive_to_decimal() {
     println!("Evaluating bit string {bit_string} as different notations...");
     println!("Signed magnitude: {}", from_signed(&bit_string));
     println!("Ones complement:  {}", from_ones_complement(&bit_string));
-    println!("Twos complement:  {}", unpack!(from_twos_complement(&bit_string)));
-    println!("Excess-128:       {}", unpack!(from_excess_128(&bit_string)));
+    println!("Twos complement:  {}", unpack(from_twos_complement(&bit_string)));
+    println!("Excess-128:       {}", unpack(from_excess_128(&bit_string)));
 }
 
 /// Converts a decimal to its 8-bit signed binary form.
