@@ -13,15 +13,6 @@
 
 use std::fmt::Display;
 
-/// Returns a string of the value contained within a `Result<T, E>` type,
-/// whether `Ok` or `Err`.
-fn unpack<T: Display, E: Display>(r: Result<T, E>) -> String {
-    match r {
-        Ok(value) => value.to_string(),
-        Err(msg) => msg.to_string(),
-    }
-}
-
 /// Non-interactive run. Can be omitted from Rust Playground.
 pub fn run(n: i32) {
     println!("Evaluating decimal {n}...");
@@ -325,6 +316,19 @@ fn validate_number(n: i32, min: i32, max: i32) -> Result<(), String> {
         )
     }
     Ok(())
+}
+
+/// Returns a string of the value contained within a `Result<T, E>` type,
+/// whether `Ok` or `Err`.
+fn unpack<T, E>(r: Result<T, E>) -> String
+where
+    T: Display,
+    E: Display,
+{
+    match r {
+        Ok(value) => value.to_string(),
+        Err(msg) => msg.to_string(),
+    }
 }
 
 #[cfg(test)]
