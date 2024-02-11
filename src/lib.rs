@@ -479,4 +479,21 @@ mod tests {
     fn from_unsigned_zero() {
         assert_eq!(from_unsigned("00000000"), 0);
     }
+
+    #[test]
+    fn from_excess_128_zero() {
+        assert_eq!(from_excess_128("00000000"), Ok(-128));
+    }
+
+    #[test]
+    fn from_excess_128_positive() {
+        assert_eq!(from_excess_128("11111111"), Ok(127));
+        assert_eq!(from_excess_128("11111110"), Ok(126));
+    }
+
+    #[test]
+    fn from_excess_128_negative() {
+        assert_eq!(from_excess_128("00000000"), Ok(-128));
+        assert_eq!(from_excess_128("00000001"), Ok(-127));
+    }
 }
