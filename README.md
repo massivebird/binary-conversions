@@ -25,7 +25,7 @@ To manually build this project, you must first install [Rust](https://www.rust-l
 Once you have Rust installed, run the following commands:
 
 ```bash
-git clone https://github.com/massivebird/arcsearch
-cd arcsearch
+git clone https://github.com/massivebird/binary-conversions
+cd binary-conversions
 cargo run -- --interactive
 ```
