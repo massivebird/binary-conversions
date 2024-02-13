@@ -11,9 +11,12 @@ This command line application converts decimal values to and from the following 
 
 Run this project online [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=f35ef8a2b23292d85f571f7ee6c98034)!
 
-Click `Run` at the top of the page to run the program.
+Click `Run` at the top of the page to run the program. Input can be provided at the bottom of the "Execution" pane.
 
-> Link last updated: 9 February 2023 @ 18:16
+> Link last updated: 12 February 2023 @ 19:05
+
+> [!NOTE]
+> Code present in the Rust Playground link belongs to a subset of the actual source code; functions not critical to the interactive mode have been removed in order to improve readability.
 
 ### Building manually
 
@@ -24,5 +27,5 @@ Once you have Rust installed, run the following commands:
 ```bash
 git clone https://github.com/massivebird/arcsearch
 cd arcsearch
-cargo run -- --interactive # runs unoptimized build
+cargo run -- --interactive
 ```
