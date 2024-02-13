@@ -15,7 +15,10 @@ use std::fmt::Display;
 
 /// Non-interactive run. Can be omitted from Rust Playground.
 pub fn run(n: i32) {
-    assert!(n >= -128 && n <= 127, "Outside of range (min: -128, max: 127)");
+    assert!(
+        (-128..=127).contains(&n),
+        "Outside of range (min: -128, max: 127)"
+    );
 
     println!("Evaluating decimal {n}...");
     println!("Signed magnitude:  {}", unpack(to_signed(n)));
@@ -95,7 +98,7 @@ fn interactive_to_decimal() {
     println!("Evaluating bit string {bit_string} as different notations...");
     println!("Signed magnitude: {}", from_signed(&bit_string));
     println!("Ones complement:  {}", from_ones_complement(&bit_string));
-    println!("Twos complement:  {}", unpack(from_twos_complement(&bit_string)));
+    println!("Twos complement:  {}", from_twos_complement(&bit_string));
     println!("Excess-128:       {}", unpack(from_excess_128(&bit_string)));
 }
 
@@ -243,17 +246,17 @@ fn from_ones_complement(bit_string: &str) -> i32 {
 }
 
 /// Converts a bit string in twos complement form to its decimal value.
-fn from_twos_complement(bit_string: &str) -> Result<i32, String> {
+fn from_twos_complement(bit_string: &str) -> i32 {
     let sign_bit = bit_string.chars().next().unwrap();
     // positive -> unchanged from unsigned form
-    if sign_bit == '0' { return Ok(from_unsigned(bit_string)) }
+    if sign_bit == '0' { return from_unsigned(bit_string) }
 
     let magnitude = bit_string.chars().skip(1).collect::<String>();
 
     let Some(position_of_smallest_one) = magnitude.rfind('1') else {
         // -128 is the ONLY case in which there is a negative number with no
         // `1` bits in the unsigned magnitude
-        return Ok(-128);
+        return -128;
     };
 
     // subtract one from the bit string, then flip bits
@@ -268,9 +271,7 @@ fn from_twos_complement(bit_string: &str) -> Result<i32, String> {
         .collect::<String>()
     );
 
-    Ok(
-        -from_unsigned(&flipped_magnitude)
-    )
+    -from_unsigned(&flipped_magnitude)
 }
 
 /// Converts a bit string in excess-128 form to its decimal value.
@@ -430,21 +431,21 @@ mod tests {
 
     #[test]
     fn from_twos_complement_positive() {
-        assert_eq!(from_twos_complement("011000"), Ok(24));
-        assert_eq!(from_twos_complement("01111110"), Ok(126));
-        assert_eq!(from_twos_complement("01111111"), Ok(127));
+        assert_eq!(from_twos_complement("011000"), 24);
+        assert_eq!(from_twos_complement("01111110"), 126);
+        assert_eq!(from_twos_complement("01111111"), 127);
     }
 
     #[test]
     fn from_twos_complement_negative() {
-        assert_eq!(from_twos_complement("11011011"), Ok(-37));
-        assert_eq!(from_twos_complement("10000000"), Ok(-128));
-        assert_eq!(from_twos_complement("10000010"), Ok(-126));
+        assert_eq!(from_twos_complement("11011011"), -37);
+        assert_eq!(from_twos_complement("10000000"), -128);
+        assert_eq!(from_twos_complement("10000010"), -126);
     }
 
     #[test]
     fn from_twos_complement_zero() {
-        assert_eq!(from_twos_complement("0"), Ok(0));
+        assert_eq!(from_twos_complement("0"), 0);
     }
 
     #[test]
