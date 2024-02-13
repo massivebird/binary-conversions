@@ -1,6 +1,6 @@
 // Author: Garrett Drake
 // Project: Signed Integer Representation
-// Submission Date: TBD
+// Submission Date: 12 February 2024
 // Description:
 //
 // This project allows users to convert decimal values to and from the
@@ -15,13 +15,12 @@ use std::fmt::Display;
 
 /// Non-interactive run. Can be omitted from Rust Playground.
 pub fn run(n: i32) {
+    assert!(n >= -128 && n <= 127, "Outside of range (min: -128, max: 127)");
+
     println!("Evaluating decimal {n}...");
-    // println!("Unsigned:          {}", unsigned_bit_string(n));
     println!("Signed magnitude:  {}", unpack(to_signed(n)));
     println!("Ones complement:   {}", unpack(to_ones_complement(n)));
     println!("Twos complement:   {}", unpack(to_twos_complement(n)));
-    // println!("Excess-32:         {}", unpack(to_excess(32, n)));
-    // println!("Excess-64:         {}", unpack(to_excess(64, n)));
     println!("Excess-128:        {}", unpack(to_excess(128, n)));
 }
 
